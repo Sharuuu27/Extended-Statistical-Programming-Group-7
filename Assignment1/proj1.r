@@ -2,7 +2,7 @@
 # 3. The following code will read the file into R. You will need to change the path in the setwd call to point to your local repo. Only use the given file name for the Shakespeare text file, to facilitate marking.
 
 #setwd("put/your/local/repo/location/here") ## comment out of submitted
-a <- scan("pg100.txt", what="character", skip=83, nlines=196043-83,
+a <- scan("shakespeare.txt", what="character", skip=83, nlines=196043-83,
           fileEncoding="UTF-8")
 
 # 4. Some pre-processing of a is needed.
