@@ -1,0 +1,74 @@
+
+# 3. The following code will read the file into R. You will need to change the path in the setwd call to point to your local repo. Only use the given file name for the Shakespeare text file, to facilitate marking.
+
+#setwd("put/your/local/repo/location/here") ## comment out of submitted
+a <- scan("pg100.txt", what="character", skip=83, nlines=196043-83,
+          fileEncoding="UTF-8")
+
+# 4. Some pre-processing of a is needed.
+## (a)
+
+i_ob <- grep("[", a, fixed=TRUE) # locate all words in 'a' that contain '[' (note: ob is opening bracket)
+
+i_uob <- c() # create an empty list to store the locations of the unmatched ['
+for (i in i_ob) {
+  i_uob_temp <- grep("]", a[i:(i+100)], fixed=TRUE) # index of corresponding ']'
+  
+  if (length(i_uob_temp)==0) { # if the corresponding ']' is not found within the next 100 words, 
+    i_uob <- append(i_uob, i) # store the location of '[' 
+  }
+}
+
+a_s <- a
+a_s[i_uob] <- gsub('\\[', '', a[i_uob]) # delete the unmatched stage directions
+
+
+## (b)
+
+i_u <- c()
+
+for (i in 1:length(a_s)) {
+  if ((a_s[i]==toupper(a_s[i])) &      #locate words that are fully upper case, and numbers expressed as arabic numerals
+      (a_s[i]!='I') & (a_s[i]!='A')) { #except for 'I' and 'A'
+    i_u <- append(i_u, i)
+  }
+}
+a_s[i_u[1:10]]
+
+a_s2 <- a_s
+a_s2 <- a_s[-i_u] # delete character names and arabic numerals
+
+
+## (c)
+
+a_s2 <- gsub("_", "", a_s2) #remove “_”
+a_s2 <- gsub("-", "", a_s2) #remove “-”
+
+
+## (d)
+
+split_punct <- function(x) {
+  puncs <- c(",", ".", ";", "!", ":", "?") #list of punctuations
+  for (punc in puncs) {
+    ii <- grep(punc, x, fixed=TRUE) ## which elements of text include punc.?
+    if (length(ii)!=0) { #if x includes corresponding punc
+      xs <- rep("", length(ii)+length(x)) ## vector to store the words and puncs
+      iis <- ii+1:length(ii) ## where should puncs go in xs?
+      xs[iis] <- substr(x[ii], nchar(x[ii]), nchar(x[ii])) ## insert puncs
+      xs[-iis] <- gsub(paste('\\', punc, sep=""), "", x) ## insert words without puncs
+      x <- xs
+    }
+  }
+  return(x)
+}
+
+
+## (e)
+
+a_s3 <- split_punct(a_s2)
+
+
+## (f)
+
+a_s4 <- tolower(a_s3)
+
