@@ -13,8 +13,8 @@ i_ob <- grep("[", a, fixed=TRUE) ##locate all words in 'a' that contain '[' (not
 
 i_uob <- c() ##create an empty list to store the locations of the unmatched ['
 for (i in i_ob) {
-  range<-min(i+100,length(a)) ##avoid errors
-  i_uob_temp <- grep("]", a[(i+1):range], fixed=TRUE) ##index of corresponding ']'
+  range <- min(i+100, length(a)) ##avoid errors
+  i_uob_temp <- grep("]", a[i:range], fixed=TRUE) ##index of corresponding ']'
   
   if (length(i_uob_temp)==0) { ##if the corresponding ']' is not found within the next 100 words, 
     i_uob <- append(i_uob, i) ##store the location of '[' 
