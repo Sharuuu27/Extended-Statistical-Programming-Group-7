@@ -57,8 +57,7 @@ a_s2 <- a_s[-i_u] ##delete character names and arabic numerals
 
 ## (c)
 
-a_s2 <- gsub("_", "", a_s2) ##remove “_”
-a_s2 <- gsub("-", "", a_s2) ##remove “-”
+a_s2 <- gsub("[_-]", "", a_s2) ##remove “_” and “-”
 
 
 ## (d)
@@ -92,4 +91,6 @@ a_s3 <- split_punct(a_s2)
 
 a_s4 <- tolower(a_s3)
 #a_s4[1:10]
+
+a <- a_s4 ##update 'a'
 
