@@ -24,19 +24,7 @@ for (i in i_ob) {
 a_s <- a
 a_s[i_uob] <- gsub('\\[', '', a[i_uob]) ##delete the unmatched '['
 
-i_obs <- grep("[", a_s, fixed=TRUE)
-i_cbs <- grep("]", a_s, fixed=TRUE)
-i_oc <- i_obs[i_obs %in% i_cbs] ##find index of words with ‘[’ and ‘]’
-
-for (i in i_oc) {
-  a_s[i] <- gsub("\\[.*?\\]", "", a_s[i]) ##delete stage directions within a word (e.g. "Drawer_.]—[_Singing_.]"->"Drawer_.]—" in line 234177)
-}
-
-i_obs2 <- grep("[", a_s, fixed=TRUE)
-i_cbs2 <- grep("]", a_s, fixed=TRUE)
-
-indices_to_remove <- unlist(mapply(seq, i_obs2, i_cbs2)) ##find remaining stage directions
-a_s <- a_s[-indices_to_remove] ##delete remaining stage directions
+##need additional code to delete stage directions!!
 
 
 ## (b)
