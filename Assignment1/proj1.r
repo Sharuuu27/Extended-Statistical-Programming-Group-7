@@ -96,3 +96,12 @@ a_s4 <- tolower(a_s3)
 
 a <- a_s4 ##update 'a'
 
+#5a
+uq　<- unique(a)
+
+#5b
+uq_match <- match(a,uq)
+
+#5c
+data.frame(word=uq,count=tabulate(uq_match))
+
