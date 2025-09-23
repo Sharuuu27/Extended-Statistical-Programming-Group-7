@@ -103,5 +103,19 @@ uq　<- unique(a)
 uq_match <- match(a,uq)
 
 #5c
-data.frame(word=uq,count=tabulate(uq_match))
+ot<-data.frame(word=uq,count=tabulate(uq_match))
 
+#5d
+b <- ot$word[order(ot$count, decreasing = TRUE)][1:1000]
+
+#6a
+tk <- match(a,b,nomatch=NA)
+
+
+#6b
+n=length(a)
+mlag=4
+M <- matrix(0, nrow=n-mlag, ncol=mlag+1)
+for (j in 0:mlag){
+  M[,j+1] <- tk[(1 + j):(n - mlag + j)]
+}
