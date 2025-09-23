@@ -58,7 +58,7 @@ a_s2 <- a_s[-i_u] ##delete character names and arabic numerals
 ## (c)
 
 
-a_s2 <- gsub("([_-])", "", a_s2) ##remove “_”
+a_s2 <- gsub("([_-])", "", a_s2) ##remove “_” & "-"
 
 
 
