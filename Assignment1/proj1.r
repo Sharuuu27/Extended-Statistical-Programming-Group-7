@@ -106,10 +106,10 @@ uq_match <- match(a,uq)
 ot<-data.frame(word=uq,count=tabulate(uq_match))
 
 #5d
-b <- ot$word[order(ot$count, decreasing = TRUE)][1:1000]
+b <- ot$word[order(ot$count, decreasing = TRUE)][1:1000] # b= 1000 common unique words
 
 #6a
-tk <- match(a,b,nomatch=NA)
+M1 <- match(a,b,nomatch=NA) # M1= matching the 1000 common words with a
 
 
 #6b
@@ -119,7 +119,7 @@ M <- matrix(0, nrow=n-mlag, ncol=mlag+1)
 for (j in 0:mlag){
   M[,j+1] <- tk[(1 + j):(n - mlag + j)]
 }
-
+# M= 4-gram word Matrix based on the M1
 
 ## Question 7
 
@@ -158,6 +158,31 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
 keyword <- c(25,450,239)
 next.word(key = keyword, M, M1)
 
+
+# Question 8 --> Generate word from a or the 1000 common words?
+## Randomly selecting the starting word to simulate the model.
+
+puncs <- c(",", ".", ";", "!", ":", "?") ##list of punctuations
+punctuation <- !is.na(match(b, puncs))
+# using is.na = if there is a punctuation found in b, using Match, it returns FALSE 
+#             = if it is word != punctuation, it returns TRUE
+# ! = negates the statement, hence: False --> True, and True --> False
+# Conclusion: punctuations are saved as TRUE 
+
+word_only_indices <- seq_along(b)[!punctuation] #contains only words, no punctuations
+word_only_indices
+
+
+starting_word <- sample(seq_along(word_only_indices), 1)
+starting_word
+
+## Alternative: Using 'romeo' to start the model
+
+get_word_index <- setNames(seq_along(b), b)
+get_word_index
+
+get_romeo <- get_word_index["romeo"]
+get_romeo
 
 
 
