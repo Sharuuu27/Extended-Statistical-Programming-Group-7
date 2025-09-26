@@ -1,7 +1,7 @@
 
 # 3. The following code will read the file into R. You will need to change the path in the setwd call to point to your local repo. Only use the given file name for the Shakespeare text file, to facilitate marking.
 
-#setwd("put/your/local/repo/location/here") ## comment out of submitted
+setwd("C:\\Users\\SHIVASHARINI\\Desktop\\Msc Statistics with Data Science\\Extended Statistical Programming\\Group 7 Repository\\Extended-Statistical-Programming-Group-7\\Assignment1") ## comment out of submitted
 a <- scan("shakespeare.txt", what="character", skip=83, nlines=196043-83,
           fileEncoding="UTF-8")
 
@@ -120,7 +120,6 @@ for (j in 0:mlag){
   M[,j+1] <- M1[(1 + j):(n - mlag + j)]
 }
 
-
 ## Question 7
 
 next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
@@ -142,12 +141,12 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
     # rows with ALL FALSE (means = 0) is the perfect match with the keyword supplied. NOTE: There could be more than one rows with exact matches
     
     if(length(matched_rows) > 0) {
-      
-      next_word <- M[matched_rows, mlag + 1]
-      # it goes to the rows with exact matches, and fetches the word from the 5th column (mlag + 1)
-      
-      return(sample(next_word,1))
-      # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
+    
+    next_word <- M[matched_rows, mlag + 1]
+    # it goes to the rows with exact matches, and fetches the word from the 5th column (mlag + 1)
+    
+    return(sample(next_word,1))
+    # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
     }
   }
   return(NA)
@@ -157,7 +156,3 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
 
 keyword <- c(25,450,239)
 next.word(key = keyword, M, M1)
-
-
-
-
