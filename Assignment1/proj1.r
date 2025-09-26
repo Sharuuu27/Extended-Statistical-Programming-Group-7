@@ -173,8 +173,8 @@ word_only_indices <- seq_along(b)[!punctuation] #contains only words, no punctua
 word_only_indices
 
 
-starting_word <- sample(seq_along(word_only_indices), 1)
-starting_word
+starting_index <- sample(seq_along(word_only_indices), 1)
+starting_index
 
 ## Alternative: Using 'romeo' to start the model
 
@@ -183,6 +183,11 @@ get_word_index
 
 get_romeo <- get_word_index["romeo"]
 get_romeo
+
+# Question 9
+
+full_sentence <- 
+
 
 
 
