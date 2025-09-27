@@ -57,9 +57,7 @@ a_s2 <- a_s[-i_u] ##delete character names and arabic numerals
 
 ## (c)
 
-
 a_s2 <- gsub("([_-])", "", a_s2) ##remove “_” & "-"
-
 
 
 ## (d)
@@ -123,14 +121,20 @@ for (j in 0:mlag){
 
 ## Question 7
 
-next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
+next.word_withNA <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
+  
+  mlag <- ncol(M) - 1 ##define mlag from the shape of M
+  
+  if (length(key)>mlag) {
+    key <- key[(length(key)-mlag+1):length(key)] ##use only data from the end of key if it is too long, in order to be able to deal appropriately with any length of key
+  }
+  
+  next.word.cands <- c() ##list of candidate words for each term length model
   
   for (i in length(key):1) {
     keyword <- key[(length(key) - i + 1): length(key)]  
     # Ex: if the key = besiege brow dig deep, the code will find for the 4-word match, if not found, then uses the 3-word, and so on
     # The loop for i starts from max of 4 to 1 (if only 3 key are supplied, then the loop starts from 3 to 1)
-    
-    mlag <- 4
     
     mc <- mlag - i + 1 
     # the match will be found from the right side, Ex: using a 4-word match, it looks at column 1:4, using a 3-word match, it looks at columns 2:4, and so on
@@ -146,12 +150,28 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
       next_word <- M[matched_rows, mlag + 1]
       # it goes to the rows with exact matches, and fetches the word from the 5th column (mlag + 1)
       
-      return(sample(next_word,1))
+      next.word.cands <- append(next.word.cands, sample(next_word,1))
       # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
+    } else {
+      next.word.cands <- append(next.word.cands, NA) ##add NA to word candidate list if no matches are found
     }
   }
-  return(NA)
-  # return NA when no matches are found after completing the loop
+  if (length(key)==1) {
+    next_word2 <- sample(next.word.cands,1)
+    ##avoid errors with prob=1. prob must be a list.
+  } else {
+    w <- w[1:length(key)] ##avoid errors with probs that are longer than the key length
+    next_word2 <- sample(next.word.cands, size=1, prob=w)
+  }
+  return(next_word2) ##randomly choose a term from each term length model
+}
+
+next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
+  result <- NA
+  while(is.na(result)) { ##repeat generating while it generates NA
+    result <- next.word_withNA(key, M, M1)
+  }
+  return(result)
 }
 
 
@@ -166,19 +186,20 @@ punctuation <- !is.na(match(b, puncs))
 # Conclusion: punctuations are saved as TRUE 
 
 word_only_token <- seq_along(b)[!punctuation] #contains only words, no punctuations
-word_only_token
-
+#word_only_token
 
 starting_token <- sample(seq_along(word_only_token), 1)
-starting_token
+print(starting_token)
+print(b[starting_token])
 
 ## Alternative: Using 'romeo' to start the model
 
 get_word_token <- setNames(seq_along(b), b)
-get_word_token
+#get_word_token
 
 get_romeo <- which(names(get_word_token) == "romeo")
-get_romeo
+print(get_romeo)
+print(b[get_romeo])
 
 # Question 9
 
@@ -188,15 +209,16 @@ generated <- starting_token
 
 
 for (i in 1:100) {
-  next_w <- next.word(key = generated[length(generated)], M, M1)
-  token  <- M1[next_w] # change from index to the token
+  token <- next.word(key = generated, M, M1)
+  #token  <- M1[next_w] # change from index to the token #<- maybe not needed?
   
   
-  if (is.na(token)) {
-    # stop if the generated token is NA
-    next
-    
-  } else if (token == 2) {
+  #if (is.na(token)) {
+  #  # stop if the generated token is NA
+  #  next
+  #  
+  #} else if (token == 2) { #I updated func. next.word not generate NA
+  if (token == 2) {
     # stop the loop if the generated token is a full stop
     generated <- c(generated, token)
     break
