@@ -117,7 +117,7 @@ n=length(a)
 mlag=4
 M <- matrix(0, nrow=n-mlag, ncol=mlag+1)
 for (j in 0:mlag){
-  M[,j+1] <- tk[(1 + j):(n - mlag + j)]
+  M[,j+1] <- M1[(1 + j):(n - mlag + j)]
 }
 # M= 4-gram word Matrix based on the M1
 
