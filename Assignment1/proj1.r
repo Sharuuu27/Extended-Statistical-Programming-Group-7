@@ -100,7 +100,7 @@ a <- a_s4 ##update 'a'
 uq　<- unique(a)
 
 #5b
-uq_match <- match(a,uq)
+uq_match <- match(a,uq) #--> token
 
 #5c
 ot<-data.frame(word=uq,count=tabulate(uq_match))
@@ -155,10 +155,6 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
 }
 
 
-keyword <- c(25,450,239)
-next.word(key = keyword, M, M1)
-
-
 # Question 8 --> Generate word from a or the 1000 common words?
 ## Randomly selecting the starting word to simulate the model.
 
@@ -169,25 +165,48 @@ punctuation <- !is.na(match(b, puncs))
 # ! = negates the statement, hence: False --> True, and True --> False
 # Conclusion: punctuations are saved as TRUE 
 
-word_only_indices <- seq_along(b)[!punctuation] #contains only words, no punctuations
-word_only_indices
+word_only_token <- seq_along(b)[!punctuation] #contains only words, no punctuations
+word_only_token
 
 
-starting_index <- sample(seq_along(word_only_indices), 1)
-starting_index
+starting_token <- sample(seq_along(word_only_token), 1)
+starting_token
 
 ## Alternative: Using 'romeo' to start the model
 
-get_word_index <- setNames(seq_along(b), b)
-get_word_index
+get_word_token <- setNames(seq_along(b), b)
+get_word_token
 
-get_romeo <- get_word_index["romeo"]
+get_romeo <- which(names(get_word_token) == "romeo")
 get_romeo
 
 # Question 9
 
-full_sentence <- 
+starting_token <- sample(seq_along(word_only_token), 1) #to randomly choose the starting index/word
+starting_token <- get_romeo #to choose 'romeo' specifically as the starting word
+generated <- starting_token
 
 
+for (i in 1:100) {
+  next_w <- next.word(key = generated[length(generated)], M, M1)
+  token  <- M1[next_w] # change from index to the token
+  
+  
+  if (is.na(token)) {
+    # stop if the generated token is NA
+    next
+    
+  } else if (token == 2) {
+    # stop the loop if the generated token is a full stop
+    generated <- c(generated, token)
+    break
+    
+  } else {
+    # else keep generating the tokens until a full stop
+    generated <- c(generated, token)
+  }
+}
 
+full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
+full_sentence
 
