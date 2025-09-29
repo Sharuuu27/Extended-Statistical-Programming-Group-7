@@ -121,9 +121,10 @@ for (j in 0:mlag){
 
 ## Question 7
 
-next.word_withNA <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
+next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   
   mlag <- ncol(M) - 1 ##define mlag from the shape of M
+  M <- M[!is.na(M[, mlag+1]),] ##remove rows that last column is NA
   
   if (length(key)>mlag) {
     key <- key[(length(key)-mlag+1):length(key)] ##use only data from the end of key if it is too long, in order to be able to deal appropriately with any length of key
@@ -153,7 +154,8 @@ next.word_withNA <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
       next.word.cands <- append(next.word.cands, sample(next_word,1))
       # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
     } else {
-      next.word.cands <- append(next.word.cands, NA) ##add NA to word candidate list if no matches are found
+      M1 <- M1[!is.na(M1)] ##remove NA
+      next.word.cands <- append(next.word.cands, sample(M1,1)) ##add NA to word candidate list if no matches are found
     }
   }
   if (length(key)==1) {
@@ -166,13 +168,13 @@ next.word_withNA <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   return(next_word2) ##randomly choose a term from each term length model
 }
 
-next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
-  result <- NA
-  while(is.na(result)) { ##repeat generating while it generates NA
-    result <- next.word_withNA(key, M, M1)
-  }
-  return(result)
-}
+#next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
+#  result <- NA
+#  while(is.na(result)) { ##repeat generating while it generates NA
+#    result <- next.word_withNA(key, M, M1)
+#  }
+#  return(result)
+#}
 
 
 # Question 8 --> Generate word from a or the 1000 common words?
@@ -203,10 +205,11 @@ print(b[get_romeo])
 
 # Question 9
 
+set.seed(42)
+
 starting_token <- sample(seq_along(word_only_token), 1) #to randomly choose the starting index/word
 starting_token <- get_romeo #to choose 'romeo' specifically as the starting word
 generated <- starting_token
-
 
 for (i in 1:100) {
   token <- next.word(key = generated, M, M1)
