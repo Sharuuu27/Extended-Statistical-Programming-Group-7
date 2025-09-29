@@ -1,3 +1,8 @@
+# Team Members: Shivasharini Govindasamy (Sharuuu27), Yu-Hsuan Hung (YuHsuan07), Yasuhiro Hara (hiroh-git)
+# Team Contributions:
+# Shivasharini - Wrote the core part of `next.word` function (steps 7-9) and assisted with other steps.
+# Yu-Hsuan - Implemented the tokenisation (step 5), matrix creation (step 6) and assisted with other steps.
+# Yasuhiro - Handled data pre-processing steps (steps 4a-4f) and assisted with other steps.
 
 # 3. The following code will read the file into R. You will need to change the path in the setwd call to point to your local repo. Only use the given file name for the Shakespeare text file, to facilitate marking.
 
@@ -41,14 +46,11 @@ a_s <- a_s[-indices_to_remove] ##delete remaining stage directions
 
 ## (b)
 
-i_u <- c()
-
-for (i in 1:length(a_s)) {
-  if ((a_s[i]==toupper(a_s[i])) &      ##locate words that are fully upper case, and numbers expressed as arabic numerals
-      (a_s[i]!='I') & (a_s[i]!='A')) { ##except for 'I' and 'A'
-    i_u <- append(i_u, i)
-  }
-}
+i_u <- which(
+  (a_s == toupper(a_s)) &  ##locate words that are fully upper case, and numbers expressed as arabic numerals
+    (a_s != 'I') &        ##except for 'I' and 'A'
+    (a_s != 'A')
+)
 #a_s[i_u[1:10]] ##check the first 10
 
 a_s2 <- a_s
@@ -129,6 +131,7 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   if (length(key)>mlag) {
     key <- key[(length(key)-mlag+1):length(key)] ##use only data from the end of key if it is too long, in order to be able to deal appropriately with any length of key
   }
+  w <- w[1:length(key)] ##avoid errors with probs that is longer than the key length
   
   next.word.cands <- c() ##list of candidate words for each term length model
   
@@ -154,27 +157,27 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
       next.word.cands <- append(next.word.cands, sample(next_word,1))
       # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
     } else {
-      M1 <- M1[!is.na(M1)] ##remove NA
-      next.word.cands <- append(next.word.cands, sample(M1,1)) ##add NA to word candidate list if no matches are found
+      w <- w[-1] ##remove corresponding weight
+      ## Ex: let key = 'besiege brow dig deep',
+      ##    found mathch with 'brow dig deep', 'dig deep' and 'deep',
+      ##    but not with 'besiege brow dig deep',
+      ##    w=[0.4, 0.3, 0.2, 0.1] -> w=[0.3, 0.2, 0.1]
     }
   }
-  if (length(key)==1) {
-    next_word2 <- sample(next.word.cands,1)
-    ##avoid errors with prob=1. prob must be a list.
+  
+  if (length(next.word.cands)==0) {
+    M1 <- M1[!is.na(M1)] ##remove NA
+    next.word.cands <- append(next.word.cands, sample(M1,1)) ##add NA to word candidate list if no matches are found
+  }
+  
+  if (length(next.word.cands)==1) {
+    next_word2 <- next.word.cands
+    ##avoid errors with prob=1 in sample func. prob must be a list.
   } else {
-    w <- w[1:length(key)] ##avoid errors with probs that are longer than the key length
     next_word2 <- sample(next.word.cands, size=1, prob=w)
   }
   return(next_word2) ##randomly choose a term from each term length model
 }
-
-#next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
-#  result <- NA
-#  while(is.na(result)) { ##repeat generating while it generates NA
-#    result <- next.word_withNA(key, M, M1)
-#  }
-#  return(result)
-#}
 
 
 # Question 8 --> Generate word from a or the 1000 common words?
@@ -213,14 +216,7 @@ generated <- starting_token
 
 for (i in 1:100) {
   token <- next.word(key = generated, M, M1)
-  #token  <- M1[next_w] # change from index to the token #<- maybe not needed?
   
-  
-  #if (is.na(token)) {
-  #  # stop if the generated token is NA
-  #  next
-  #  
-  #} else if (token == 2) { #I updated func. next.word not generate NA
   if (token == 2) {
     # stop the loop if the generated token is a full stop
     generated <- c(generated, token)
