@@ -129,14 +129,14 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   M <- M[!is.na(M[, mlag+1]),] ##remove rows that last column is NA
   
   if (length(key)>mlag) {
-    key <- key[(length(key)-mlag+1):length(key)] ##use only data from the end of key if it is too long, in order to be able to deal appropriately with any length of key
+    key <- tail(key,mlag) ##use only data from the end of key if it is too long, in order to be able to deal appropriately with any length of key
   }
   w <- w[1:length(key)] ##avoid errors with probs that is longer than the key length
   
   next.word.cands <- c() ##list of candidate words for each term length model
   
   for (i in length(key):1) {
-    keyword <- key[(length(key) - i + 1): length(key)]  
+    keyword <- tail(key,i)  
     # Ex: if the key = besiege brow dig deep, the code will find for the 4-word match, if not found, then uses the 3-word, and so on
     # The loop for i starts from max of 4 to 1 (if only 3 key are supplied, then the loop starts from 3 to 1)
     
