@@ -134,6 +134,7 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   w <- w[1:length(key)] ##avoid errors with probs that is longer than the key length
   
   next.word.cands <- c() ##list of candidate words for each term length model
+  p <- c() ##updated list of weights
   
   for (i in length(key):1) {
     keyword <- tail(key,i)  
@@ -154,14 +155,11 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
       next_word <- M[matched_rows, mlag + 1]
       # it goes to the rows with exact matches, and fetches the word from the 5th column (mlag + 1)
       
-      next.word.cands <- append(next.word.cands, sample(next_word,1))
+      next.word.cands <- append(next.word.cands, next_word)
       # there can be more than one word from the 5th columns derived from the perfect match, hence from a collection of next-word, sample is used choose ONE word randomly
-    } else {
-      w <- w[-1] ##remove corresponding weight
-      ## Ex: let key = 'besiege brow dig deep',
-      ##    found mathch with 'brow dig deep', 'dig deep' and 'deep',
-      ##    but not with 'besiege brow dig deep',
-      ##    w=[0.4, 0.3, 0.2, 0.1] -> w=[0.3, 0.2, 0.1]
+      
+      p <- append(p, rep(w[length(key)-i+1]/length(next_word), length(next_word)))
+      ##update the weight list
     }
   }
   
@@ -174,7 +172,7 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
     next_word2 <- next.word.cands
     ##avoid errors with prob=1 in sample func. prob must be a list.
   } else {
-    next_word2 <- sample(next.word.cands, size=1, prob=w)
+    next_word2 <- sample(next.word.cands, size=1, prob=p)
   }
   return(next_word2) ##randomly choose a term from each term length model
 }
@@ -206,6 +204,7 @@ get_romeo <- which(names(get_word_token) == "romeo")
 print(get_romeo)
 print(b[get_romeo])
 
+
 # Question 9
 
 set.seed(42)
@@ -229,5 +228,10 @@ for (i in 1:100) {
 }
 
 full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
+for (punc in puncs) {
+  full_sentence <- gsub(paste(' \\', punc, sep=""), 
+                        paste('\\', punc, sep=""), 
+                        full_sentence)
+} ##delete space before punctuations
 full_sentence
 
