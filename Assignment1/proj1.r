@@ -1,7 +1,11 @@
 # Team Members: 
 # 1. Shivasharini Govindasamy (Sharuuu27) - S2766392
 # 2. Yu-Hsuan Hung (YuHsuan07) - s2793274
+<<<<<<< HEAD
 # 3. Yasuhiro Hara (hiroh-git) 
+=======
+# 3. Yasuhiro Hara (hiroh-git) - S2826059
+>>>>>>> dd5564e1ebdfe445de150199fdb113b2da82069d
 
 # Team Contributions:
 # Yasuhiro - Handled data pre-processing steps (steps 4a-4f). Implemented the weightage and probabilities in sampling the next word (step 7) and assisted with other steps.
