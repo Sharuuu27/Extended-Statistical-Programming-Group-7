@@ -2,6 +2,10 @@
 # 1. Shivasharini Govindasamy (Sharuuu27) - S2766392
 # 2. Yu-Hsuan Hung (YuHsuan07) - s2793274
 # 3. Yasuhiro Hara (hiroh-git) - S2826059
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8155de14790023faf3960094807a93d22aa18eee
 
 # Team Contributions:
 # Yasuhiro - Handled data pre-processing steps (steps 4a-4f). Implemented the weightage and probabilities in sampling the next word (step 7) and assisted with other steps.
