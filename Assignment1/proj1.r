@@ -1,6 +1,6 @@
 # Team Members: 
 # 1. Shivasharini Govindasamy (Sharuuu27) - S2766392
-# 2. Yu-Hsuan Hung (YuHsuan07)
+# 2. Yu-Hsuan Hung (YuHsuan07) - s2793274
 # 3. Yasuhiro Hara (hiroh-git)
 
 # Team Contributions:
