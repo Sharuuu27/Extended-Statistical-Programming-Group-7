@@ -17,7 +17,7 @@ a <- scan("shakespeare.txt", what="character", skip=83, nlines=196043-83,
 
 
 
-## Remove the stage directions by finding '[' and ']'  
+## Remove stage directions in `a`: for each '[', delete to next ']' within 100 tokens
 i_ob <- grep("[", a, fixed=TRUE) ## locate all words in 'a' that contain '[' (note: ob is opening bracket)
 
 i_uob <- c() ## create an empty list to store the locations of the unmatched ['
@@ -49,7 +49,7 @@ a_s <- a_s[-indices_to_remove] ## delete remaining stage directions
 ## a_s --> "a" without stage directions
 
 
-## Remove the words that are fully upper case
+## Remove non-text in `a`: delete fully UPPERCASE words and Arabic numerals (toupper-equal); keep "I" and "A"
 i_u <- which(
   (a_s == toupper(a_s)) &  ## locate words that are fully upper case, and numbers expressed as arabic numerals
     (a_s != 'I') &        ## except for 'I' and 'A'
@@ -61,12 +61,12 @@ a_s2 <- a_s[-i_u] ## delete character names and arabic numerals
 ## a_s2 --> "a" without stage directions, character names and arabic numerals
 
 
-## Remove '-' and '_' from words by using gsub 
+## With gsub, strip '_' and '-' from words 
 a_s2 <- gsub("([_-])", "", a_s2) ##remove “_” & "-"
 ## a_s2 --> "a" without stage directions, character names, arabic numerals, underscores ("_") and hyphens("-")
 
 
-## Remove the punctuation marks from the word, and add the marks to punctuation marks as a new entry
+## remove punctuation marks from words and insert each as its own token right after; use grep/rep/gsub; return updated vector.
 split_punct <- function(x) {
   puncs <- c(",", ".", ";", "!", ":", "?") ## list of punctuations
   for (punc in puncs) {
@@ -86,14 +86,14 @@ x <- c("An", "omnishambles,", "in", "a", "headless", "chicken", "factory.")
 split_punct(x) ## to check whether the function "split_punc()" works correctly
 
 
-## Separate the punctuation marks from words
+## Use split_punct to detach , . ; ! : ? from words as separate tokens
 a_s3 <- split_punct(a_s2)
 ## a_s3 --> "a" without stage directions, character names, arabic numerals, underscores ("_"), hyphens("-")
 ##           and punctuations from the words
 
 
 
-## Convert the cleaned word vector a ti lower case
+## Convert cleaned word vector 'a'to lower case for further use
 a_s4 <- tolower(a_s3)
 ## a_s4 --> "a" without stage directions, character names, arabic numerals, underscores ("_"), hyphens("-"),
 ##           separated punctuations from the words and all words in lower case
@@ -101,29 +101,29 @@ a_s4 <- tolower(a_s3)
 a <- a_s4 ##rename 'a'
 
 
-## Find the vector of unique words in a 
+## Get vector of unique words with unique(a) 
 uq　<- unique(a) ## to obtain unique words from a
 
 
-## 
+## Use match to map each word in `a` to its index in the unique word vector (same length as 'a')
 uq_match <- match(a,uq) ##creating tokens for words in a
 
 
-# Count up the occurrence of each unique word
+## Count how many times each unique word appears
 ot<-data.frame(word=uq,count=tabulate(uq_match)) ## creating a frequency table for the unique words
 
 
-# Create a vector b which contains the 1000 most 
+## Create 'b' with the 1000 most common words
 b <- ot$word[order(ot$count, decreasing = TRUE)][1:1000] ## b = first-1000 common unique words
 
 
-# Question 6a
+## Using match, map each word in 'a' to its index in 'b' (length = length(a)); words not in 'b' become NA.
 M1 <- match(a,b,nomatch=NA) ## M1 = matching the 1000 common words with a
 
 
-# Question 6b
+## Build M ( (n-mlag) x (mlag+1) ) where col1 is token indices (match to b), and each next col is that vector shifted by 1,2,...,mlag
 n=length(a)
-mlag=4
+mlag=4 
 M <- matrix(0, nrow=n-mlag, ncol=mlag+1)
 for (j in 0:mlag){
   M[,j+1] <- M1[(1 + j):(n - mlag + j)]
@@ -131,7 +131,7 @@ for (j in 0:mlag){
 ## M = 4-gram word Matrix based on the M1
 
 
-# Question 7
+## Implement next.word(key, M, M1, w) -> return a next-word token via variable-order n-gram: match rows in M to the tail of 'key' (reducing order if needed), combine with weights 'w', and sample a token
 next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   
   mlag <- ncol(M) - 1 ## define mlag from the shape of M
@@ -190,7 +190,6 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
 } ## returns the final output: the "next word"
 
 
-# Question 8
 ## Randomly selecting the starting word to simulate the model.
 
 puncs <- c(",", ".", ";", "!", ":", "?") ##list of punctuations
@@ -208,7 +207,7 @@ print(starting_token)
 print(b[starting_token])
 
 
-# Question 8 Alternative: Using 'romeo' to start the model
+## Alternative: Using 'romeo' to start the model
 get_word_token <- setNames(seq_along(b), b)
 
 get_romeo <- which(names(get_word_token) == "romeo")
@@ -218,7 +217,7 @@ print(b[get_romeo])
 starting_token <- get_romeo ## o choose 'romeo' specifically as the starting word
 
 
-# Question 9
+## Generate text by repeatedly calling next.word until '.' appears, then map tokens back to words and print
 set.seed(42) ## to enable reproducibility
 
 generated <- starting_token
