@@ -1,7 +1,7 @@
 # Team Members: 
 # 1. Shivasharini Govindasamy (Sharuuu27) - S2766392
 # 2. Yu-Hsuan Hung (YuHsuan07) - s2793274
-# 3. Yasuhiro Hara (hiroh-git)
+# 3. Yasuhiro Hara (hiroh-git) 
 
 # Team Contributions:
 # Yasuhiro - Handled data pre-processing steps (steps 4a-4f). Implemented the weightage and probabilities in sampling the next word (step 7) and assisted with other steps.
@@ -9,13 +9,15 @@
 # Shivasharini - Wrote the core part of `next.word` function (steps 7-9) and assisted with other steps.
 
 
-# Question 3
+
+## Read the file into R
 #setwd("put/your/local/repo/location/here") ## comment out of submitted
 a <- scan("shakespeare.txt", what="character", skip=83, nlines=196043-83,
           fileEncoding="UTF-8")
 
 
-# Question 4a
+
+## Remove the stage directions by finding '[' and ']'  
 i_ob <- grep("[", a, fixed=TRUE) ## locate all words in 'a' that contain '[' (note: ob is opening bracket)
 
 i_uob <- c() ## create an empty list to store the locations of the unmatched ['
@@ -47,7 +49,7 @@ a_s <- a_s[-indices_to_remove] ## delete remaining stage directions
 ## a_s --> "a" without stage directions
 
 
-## Question 4b
+## Remove the words that are fully upper case
 i_u <- which(
   (a_s == toupper(a_s)) &  ## locate words that are fully upper case, and numbers expressed as arabic numerals
     (a_s != 'I') &        ## except for 'I' and 'A'
@@ -59,12 +61,12 @@ a_s2 <- a_s[-i_u] ## delete character names and arabic numerals
 ## a_s2 --> "a" without stage directions, character names and arabic numerals
 
 
-## Question 4c
+## Remove '-' and '_' from words by using gsub 
 a_s2 <- gsub("([_-])", "", a_s2) ##remove “_” & "-"
 ## a_s2 --> "a" without stage directions, character names, arabic numerals, underscores ("_") and hyphens("-")
 
 
-## Question 4d
+## Remove the punctuation marks from the word, and add the marks to punctuation marks as a new entry
 split_punct <- function(x) {
   puncs <- c(",", ".", ";", "!", ":", "?") ## list of punctuations
   for (punc in puncs) {
@@ -84,34 +86,34 @@ x <- c("An", "omnishambles,", "in", "a", "headless", "chicken", "factory.")
 split_punct(x) ## to check whether the function "split_punc()" works correctly
 
 
-## Question 4e
+## Separate the punctuation marks from words
 a_s3 <- split_punct(a_s2)
 ## a_s3 --> "a" without stage directions, character names, arabic numerals, underscores ("_"), hyphens("-")
 ##           and punctuations from the words
 
 
 
-## Question 4f
+## Convert the cleaned word vector a ti lower case
 a_s4 <- tolower(a_s3)
-## a_s3 --> "a" without stage directions, character names, arabic numerals, underscores ("_"), hyphens("-"),
+## a_s4 --> "a" without stage directions, character names, arabic numerals, underscores ("_"), hyphens("-"),
 ##           separated punctuations from the words and all words in lower case
 
 a <- a_s4 ##rename 'a'
 
 
-# Question 5a
+## Find the vector of unique words in a 
 uq　<- unique(a) ## to obtain unique words from a
 
 
-# Question 5b
+## 
 uq_match <- match(a,uq) ##creating tokens for words in a
 
 
-# Question 5c
+# Count up the occurrence of each unique word
 ot<-data.frame(word=uq,count=tabulate(uq_match)) ## creating a frequency table for the unique words
 
 
-# Question 5d
+# Create a vector b which contains the 1000 most 
 b <- ot$word[order(ot$count, decreasing = TRUE)][1:1000] ## b = first-1000 common unique words
 
 
