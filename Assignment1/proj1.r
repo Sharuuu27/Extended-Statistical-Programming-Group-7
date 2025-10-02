@@ -220,7 +220,7 @@ generated <- starting_token
 
 token <- 0
 while (token != 2) { ## generates words until a full stop is generated
-  token <- next.word(key = generated, M, M1)
+  token <- next.word(key = generated, M, M1) ## generate words by using next.word()
   generated <- c(generated, token)
   ## keep generating the tokens and update generated words list
 }
@@ -245,7 +245,7 @@ M1 <- M1[!is.na(M1)] ##common words list
 
 token <- 0
 while (token != 2) { ## generates words until a full stop is generated
-  token <- sample(M1,1)
+  token <- sample(M1,1) ## generates words from common words (M1)
   generated_comp <- c(generated_comp, token)
   ## keep generating the tokens and update generated words list
 }
