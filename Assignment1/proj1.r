@@ -251,11 +251,11 @@ for (punc in puncs) {
                         full_sentence)
 } 
 
-cat("Markov model:",full_sentence)
+cat("Markov model:\n",full_sentence)
 
 ## Compare the results to ‘sentences’ obtained by simply drawing common words at random from the text until a full stop is drawn
 
-generated <- starting_token
+generated_comp <- starting_token
 M1 <- M1[!is.na(M1)] ##common words list
 
 for (i in 1:100) { ## generates up to 100 words or until a full stop is generated (whichever comes first)
@@ -263,12 +263,12 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
   
   if (token == 2) {
     ## stop the loop if the generated token is a full stop
-    generated <- c(generated, token)
+    generated_comp <- c(generated_comp, token)
     break
     
   } else {
     ## else keep generating the tokens until a full stop or reaching the i=100
-    generated <- c(generated, token)
+    generated_comp <- c(generated_comp, token)
   }
 }
 
@@ -280,14 +280,15 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
 #  ## keep generating the tokens and update generated words list
 #}
 
-full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
+full_sentence_comp <- paste(names(get_word_token)[match(generated_comp, get_word_token)], collapse = " ")
 ## converting the tokens generated simply drawing common words at random into strings (clean sentence structure)
 
 for (punc in puncs) {
-  full_sentence <- gsub(paste(' \\', punc, sep=""), 
-                        paste('\\', punc, sep=""), 
-                        full_sentence)
+  full_sentence_comp <- gsub(paste(' \\', punc, sep=""), 
+                             paste('\\', punc, sep=""), 
+                             full_sentence_comp)
 } ## deletes space before punctuations to make the sentences more neat
 
-cat("Simply drawing common words at random:",full_sentence)
+cat("Simply drawing common words at random:\n", full_sentence_comp)
+
 
