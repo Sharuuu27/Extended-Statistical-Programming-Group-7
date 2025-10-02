@@ -218,27 +218,12 @@ set.seed(42) ## to enable reproducibility
 
 generated <- starting_token
 
-for (i in 1:100) { ## generates up to 100 words or until a full stop is generated (whichever comes first)
+token <- 0
+while (token != 2) { ## generates words until a full stop is generated
   token <- next.word(key = generated, M, M1)
-  
-  if (token == 2) {
-    generated <- c(generated, token)
-    break
-    ## stop the loop if the generated token is a full stop
-    
-  } else {
-    generated <- c(generated, token)
-    ## else keep generating the tokens until a full stop or reaching the i=100
-  }
+  generated <- c(generated, token)
+  ## keep generating the tokens and update generated words list
 }
-
-## If we allow to generate more than 100 words
-#token <- 0
-#while (token != 2) { ## generates words until a full stop is generated (whichever comes first)
-#  token <- next.word(key = generated, M, M1)
-#  generated <- c(generated, token)
-#  ## keep generating the tokens and update generated words list
-#}
 
 ## converting the tokens generated from the "new.word" function into strings (clean sentence structure)
 full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
@@ -258,27 +243,12 @@ cat("Markov model:\n",full_sentence)
 generated_comp <- starting_token
 M1 <- M1[!is.na(M1)] ##common words list
 
-for (i in 1:100) { ## generates up to 100 words or until a full stop is generated (whichever comes first)
+token <- 0
+while (token != 2) { ## generates words until a full stop is generated
   token <- sample(M1,1)
-  
-  if (token == 2) {
-    ## stop the loop if the generated token is a full stop
-    generated_comp <- c(generated_comp, token)
-    break
-    
-  } else {
-    ## else keep generating the tokens until a full stop or reaching the i=100
-    generated_comp <- c(generated_comp, token)
-  }
+  generated_comp <- c(generated_comp, token)
+  ## keep generating the tokens and update generated words list
 }
-
-## If we allow to generate more than 100 words
-#token <- 0
-#while (token != 2) { ## generates words until a full stop is generated
-#  token <- sample(M1,1)
-#  generated <- c(generated, token)
-#  ## keep generating the tokens and update generated words list
-#}
 
 full_sentence_comp <- paste(names(get_word_token)[match(generated_comp, get_word_token)], collapse = " ")
 ## converting the tokens generated simply drawing common words at random into strings (clean sentence structure)
