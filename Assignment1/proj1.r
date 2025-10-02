@@ -251,8 +251,7 @@ for (punc in puncs) {
                         full_sentence)
 } 
 
-print("Markov model:")
-full_sentence
+cat("Markov model:",full_sentence)
 
 ## Compare the results to ‘sentences’ obtained by simply drawing common words at random from the text until a full stop is drawn
 
@@ -290,6 +289,5 @@ for (punc in puncs) {
                         full_sentence)
 } ## deletes space before punctuations to make the sentences more neat
 
-print("Simply drawing common words at random:")
-full_sentence
+cat("Simply drawing common words at random:",full_sentence)
 
