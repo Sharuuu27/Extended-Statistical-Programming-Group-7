@@ -282,7 +282,7 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
 #}
 
 full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
-## converting the tokens generated from the "new.word" function into strings (clean sentence structure)
+## converting the tokens generated simply drawing common words at random into strings (clean sentence structure)
 
 for (punc in puncs) {
   full_sentence <- gsub(paste(' \\', punc, sep=""), 
