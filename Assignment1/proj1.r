@@ -232,7 +232,7 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
   }
 }
 
-## If we allow to generate more than 100 words
+## If we allow to generate more than 100 words by using next.word()
 #token <- 0
 #while (token != 2) { ## generates words until a full stop is generated (whichever comes first)
 #  token <- next.word(key = generated, M, M1)
@@ -272,7 +272,7 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
   }
 }
 
-## If we allow to generate more than 100 words
+## If we allow to generate more than 100 words from M1
 #token <- 0
 #while (token != 2) { ## generates words until a full stop is generated
 #  token <- sample(M1,1)
