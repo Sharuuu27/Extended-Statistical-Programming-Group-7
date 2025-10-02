@@ -131,10 +131,10 @@ for (j in 0:mlag){
 ## M = 4-gram word Matrix based on the M1
 
 
-## Implement next.word(key, M, M1, w) -> return a next-word token via variable-order n-gram: match rows in M to the tail of 'key' (reducing order if needed), combine with weights 'w', and sample a token
+## Creates a function which generates the next word from the key word supplied, with weighted random sampling
 next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   
-  mlag <- ncol(M) - 1 ## define mlag from the shape of M
+  mlag <- ncol(M) - 1 
   M <- M[!is.na(M[, mlag+1]),] ## remove rows that last column is NA
   
   if (length(key)>mlag) {
@@ -142,7 +142,7 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
   }
   w <- w[1:length(key)] ## avoid errors with probs that is longer than the key length
   
-  next.word.cands <- c() ##l ist of candidate words for each term = i length model
+  next.word.cands <- c() ##list of candidate words for each term = i length model
   p <- c() ## updated list of weights
   
   for (i in length(key):1) {
@@ -162,11 +162,11 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
     if(length(matched_rows) > 0) {
       
       next_word <- M[matched_rows, mlag + 1]
-      ## it goes to the rows with exact matches, and fetches the word from the 5th column (mlag + 1)
+      ## it goes to the rows with exact matches, and fetches the word from the 5th column
       
       next.word.cands <- append(next.word.cands, next_word)
-      ## there can be more than one word from the 5th column (m-lag +1) derived from the perfect match
-      ## this collects all the potential candidates of words (from all the i-loop) to become the next word based on the weightage and probabilities
+      ## there can be more than one word from the 5th column derived from the perfect match
+      ## this collects all the potential candidates of words (from all the i-loop) to become the next word
       
       p <- append(p, rep(w[length(key)-i+1]/length(next_word), length(next_word)))
       ## update the weight list
@@ -184,40 +184,36 @@ next.word <- function(key, M, M1, w = rep(1, ncol(M) - 1)) {
     
   } else {
     next_word2 <- sample(next.word.cands, size=1, prob=p)
-  } ## randomly choose a word to become the next word with involving weightage/biasness in the random sample
+  } ## randomly choose a word to become the next word with weighted random sampling
   
   return(next_word2) 
 } ## returns the final output: the "next word"
 
 
-## Randomly selecting the starting word to simulate the model.
+## To randomly select the starting word which is not a punctuation
 
 puncs <- c(",", ".", ";", "!", ":", "?") ##list of punctuations
-punctuation <- !is.na(match(b, puncs))
-## using is.na = if there is a punctuation found in b, using Match, it returns FALSE 
-##            = if it is word != punctuation, it returns TRUE
-## ! = negates the statement, hence: False --> True, and True --> False
-## Conclusion: punctuations are saved as TRUE 
+punctuation <- !is.na(match(b, puncs)) ## punctuations are saved as TRUE
 
 word_only_token <- seq_along(b)[!punctuation] #contains only words, no punctuations
 
 
-starting_token <- sample(seq_along(word_only_token), 1) #to randomly choose the starting index/word
+starting_token <- sample(seq_along(word_only_token), 1) 
 print(starting_token)
 print(b[starting_token])
 
 
-## Alternative: Using 'romeo' to start the model
+## To use 'romeo' as the starting token
 get_word_token <- setNames(seq_along(b), b)
 
 get_romeo <- which(names(get_word_token) == "romeo")
 print(get_romeo)
 print(b[get_romeo])
 
-starting_token <- get_romeo ## o choose 'romeo' specifically as the starting word
+starting_token <- get_romeo
 
 
-## Generate text by repeatedly calling next.word until '.' appears, then map tokens back to words and print
+## To generate a full sentence from the starting token up to a full stop
 set.seed(42) ## to enable reproducibility
 
 generated <- starting_token
@@ -226,23 +222,25 @@ for (i in 1:100) { ## generates up to 100 words or until a full stop is generate
   token <- next.word(key = generated, M, M1)
   
   if (token == 2) {
-    ## stop the loop if the generated token is a full stop
     generated <- c(generated, token)
     break
+    ## stop the loop if the generated token is a full stop
     
   } else {
-    ## else keep generating the tokens until a full stop or reaching the i=100
     generated <- c(generated, token)
+    ## else keep generating the tokens until a full stop or reaching the i=100
   }
 }
 
-full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
 ## converting the tokens generated from the "new.word" function into strings (clean sentence structure)
+full_sentence <- paste(names(get_word_token)[match(generated, get_word_token)], collapse = " ")
 
+
+## deletes space before punctuations to make the sentences more neat
 for (punc in puncs) {
   full_sentence <- gsub(paste(' \\', punc, sep=""), 
                         paste('\\', punc, sep=""), 
                         full_sentence)
-} ## deletes space before punctuations to make the sentences more neat
+} 
 
 full_sentence
