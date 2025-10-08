@@ -29,13 +29,16 @@ household_id <- function(n = 1000, hmax = 5) {
   # to make sure the population = n
 }
 
+h<-household_id()
+
 ## Question 2
 # To assign Sociability Parameter (Beta-i)
 generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
   beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
   return(beta)
-}  ### how to determine what shape and scale to use?
+}  
 
+beta <- generate_beta()
 
 # To assign regular network relations
 
