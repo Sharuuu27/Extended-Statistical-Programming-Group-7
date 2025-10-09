@@ -79,25 +79,3 @@ alink <- get.net(beta, h)
 
 
 
-#### GRM TESTING
-
-set.seed(1) # Guarantees the same random numbers
-n <- 100
-b.true <- c(0.5, 1, 10)
-ct <- qt(.975, df = n - 3)
-cp <- b.true * 0
-n.rep <- 1000
-
-for (i in 1:n.rep) {
-  x <- runif(n)
-  mu <- b.true[1] + b.true[2] * x + b.true[3] * x^2
-  y <- rpois(n, mu)
-  m1 <- lm(y ~ x + I(x^2))
-  b <- coef(m1)
-  sig.b <- sqrt(diag(vcov(m1)))
-  cp <- cp + as.numeric(b - ct * sig.b <= b.true &
-                          b + ct * sig.b >= b.true)
-}
-cp / n.rep
-
-
