@@ -155,7 +155,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
         P_random<- pmin(alpha[3] * nc * beta[S_random_idx]* beta[j] / prob_deno, 1) 
         ## Cap probability at 1
         ## generate unifrom random deviates
-        u_rand <- runif(length(S_random_idx)) 
+        u_random <- runif(length(S_random_idx)) 
         ## determine who is infected (prob P_random)
         x[S_random_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
       }
