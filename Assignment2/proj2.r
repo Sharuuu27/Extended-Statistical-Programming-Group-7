@@ -18,21 +18,16 @@
 
 set.seed(0)
 ## Question 1
-# To assign the n people to thier unique household ID
+### To assign the n people to their unique household ID
 
-household_id <- function(n = 1000, hmax = 5) {
-  # n = total population
-  # hmax = maximum members in a household
-  h <- rep(1:n, times = sample(1:hmax, n, replace = TRUE))
-  # the size of households are uniformly distributed
-  return(h[1:n])
-  # to make sure the population = n
-}
+n <- 1000
+hmax <- 5
 
-h<-household_id()
+h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
+
 
 ## Question 2
-# To assign Sociability Parameter (Beta-i)
+### To assign Sociability Parameter (Beta-i)
 generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
   beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
   return(beta)
@@ -40,7 +35,7 @@ generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
 
 beta <- generate_beta()
 
-# To assign regular network relations
+### To assign regular network relations
 
 get.net <- function(beta, h, nc = 15) {
   
@@ -79,12 +74,16 @@ alink <- get.net(beta, h)
 ## SEIR simulation model with social structure
 nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2, 
                   gamma = .4, nc = 15,nt = 100, pinf = .005) {
-  ## alpha = the daily probs I[j] -> S[i]
+  ## beta = the transmission rate parameter;
+  ## h = household each person belongs to;
+  ## alpha = the daily probs I[i] -> S[j]
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   ## nc = Average contacts; nt = number of days
-  ## ping = initial proportion infected.
+  ## pinf = initial proportion infected.
   
   ##Initialization 
+  set.seed(0)
+  n <- length(h)
   x <- rep(0, n)
   ni <- round(n * pinf)
   
@@ -103,73 +102,124 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   I[1] <- sum(x == 2);R[1] <- sum(x == 3)
   
   ## Loop over the remaining days
-  for (i in 2:nt) {
+  for (t in 2:nt) {
     
-    u <- runif(n) ## generate uniform random deviates
-    
-    x[x == 2 & u < delta] <- 3  ## I -> R with prob delta
-    x[x == 1 & u < gamma] <- 2 ## E -> I with prob gamma
-    
-    ## S -> E (Three ways)
+    u <- runif(n)          ## generate uniform random deviates
     I_idx <- which(x == 2) ## get infection indices
     
-    ## Loop through each infector j.
-    for (j in I_idx) {
-      h_id <- h[j] ## get the household ID of j
-      net <- alink[[j]] ## get the regular network contacts (indices) of j
+    x[x == 2 & u < delta] <- 3 ## I -> R with prob delta
+    x[x == 1 & u < gamma] <- 2 ## E -> I with prob gamma
+    
+    # S -> E (Three ways)
+    for (i in I_idx) {  ## Loop through each infector i
+      h_id <- h[i]      ## get the household ID of j
+      net <- alink[[i]] ## get the regular network contacts (indices) of j
       
       ## 1st way: household transmission 
-      ## find people who are S(0) and in j's household
+      ### find people who are S(0) and in j's household
       S_in_hh_idx <- which(x == 0 & h == h_id)
-      ## check if there are any S targets in the household
+      ### check if there are any S targets in the household
       if (length(S_in_hh_idx) > 0) {
-        ## generate uniform random deviates
+        ### generate uniform random deviates
         u_hh <- runif(length(S_in_hh_idx)) 
-        ## determine who is infected (prob alpha[1]).
+        ### determine who is infected (prob alpha[1]).
         x[S_in_hh_idx[u_hh < alpha[1]]] <- 1 ## S-> E with prob alpha[1]
       }
       
       ## 2nd way: Regular Network Transmission 
-      ## Filter out contacts who are still S(0)
+      ### Filter out contacts who are still S(0)
       S_net_idx <- net[x[net] == 0] 
-      ## check if there are any S targets in the regular network
+      ### check if there are any S targets in the regular network
       if (length(S_net_idx) > 0) {
-        ## generate uniform random deviates
+        ### generate uniform random deviates
         u_net <- runif(length(S_net_idx)) 
-        ## determine who is infected (prob alpha[2])
-        x[S_net_idx[u_net < alpha[2]]]<- 1 ## S-> E with prob alpha[2]
+        ### determine who is infected (prob alpha[2])
+        x[S_net_idx[u_net < alpha[2]]] <- 1 ## S-> E with prob alpha[2]
       }
       
       ## 3rd way: Irrespective Transmission 
       S_all_idx <- which(x == 0)
-      
-      ## Build exclusion list: j itself, all household members, and all regular contacts
-      excluded_idx <- unique(c(j, which(h == h_id), net)) 
-      
-      ## S_random_indices: S individuals NOT in j's household or regular net
-      S_random_idx <- S_all_idx[!(S_all_idx %in% excluded_idx)]
-      ## check if there are any S targets
-      if (length(S_random_idx) > 0) {
+      ### check if there are any S targets
+      if (length(S_all_idx) > 0) {
         
-        ## Setting P_random
-        P_random<- pmin(alpha[3] * nc * beta[S_random_idx]* beta[j] / prob_deno, 1) 
-        ## Cap probability at 1
-        ## generate unifrom random deviates
-        u_random <- runif(length(S_random_idx)) 
-        ## determine who is infected (prob P_random)
-        x[S_random_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
+        ### Setting P_random
+        #### Use pmin to cap probability at 1
+        P_random <- pmin(alpha[3] * nc * beta[i] * beta[S_all_idx] / prob_deno, 1) 
+        ### generate unifrom random deviates
+        u_random <- runif(length(S_all_idx)) 
+        ### determine who is infected (prob P_random)
+        x[S_all_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
       }
     }
     
     ## Store daily results
-    S[i] <- sum(x == 0); E[i] <- sum(x == 1)
-    I[i] <- sum(x == 2); R[i] <- sum(x == 3)
+    S[t] <- sum(x == 0); E[t] <- sum(x == 1)
+    I[t] <- sum(x == 2); R[t] <- sum(x == 3)
   }
   
   return(list(S = S, E = E, I = I, R = R))
 }
 
 
+## Question4
+## A function to nicely plot the dynamics of the simulated population states
+plot_graphs <- function(alphas, betas, labels) {
+  ## alphas = the daily probs I[j] -> S[i] in matrix format;
+  ## betas = the transmission rate parameter in matrix format;
+  ## labels = title of each parameter settings
+  
+  ## setting for plotting multiple graphs
+  ncol <- length(alphas[1,])    ## set number of graphs to plot
+  par(mfcol=c(2,ncol),          ## layout setting of the plot
+      mar=c(4,4,2,1),           ## margin settings
+      oma=c(.2,.2,.2,.2),       ## outer margin settings
+      family="serif",           ## font style settings
+      cex.axis=.6, cex.lab=.9)  ## font size settings
+  
+  for (i in 1:ncol){
+    ## draw y axis labels only on the first graph
+    if (i==1) {
+      histY <- "Frequency"; scY <- "N" 
+    } else {
+      histY <- ""; scY <- ""
+    }
+    
+    ## Simulate SEIR model with nseir function
+    epi <- nseir(beta=betas[,i],h,alink,alpha=alphas[,i])
+    
+    ## plot histogram (beta distribution)
+    hist(betas[,i],xlab="beta",ylab=histY,main=labels[i], cex.main=0.8,
+         breaks=seq(0,1,by=.1),col="skyblue", border="darkblue")
+    
+    ## plot simulated data
+    plot(epi$S,ylim=c(0,max(epi$S)),xlab="day",ylab=scY,
+         panel.first=grid(5,5),type="o",cex=.5) ## S (black)
+    lines(epi$E,col=4,type="o",cex=.5)          ## E (blue)
+    lines(epi$I,col=2,type="o",cex=.5)          ## I (red)
+    legend("topright", legend=c("S", "E", "I"), ## legend
+           col=c(1, 4, 2), pch=1, lty=1, bty="l",cex=.8)
+  }
+}
 
 
+## Question5
+## Compare 4 scenarios and plot
+### parameter inputs
+alphas <- array(c(c(.1,.01,.01),
+                  c(0,0,.04),
+                  c(.1,.01,.01),
+                  c(0,0,.04)),
+                dim=c(3,4))
 
+set.seed(0)
+beta_u <- runif(n)
+beta_mean <- rep(mean(beta_u),n)
+betas <- array(c(beta_u,beta_u,beta_mean,beta_mean),
+               dim=c(n,4))
+
+labels <- c("\nDefault parameters",
+            "Without household and\n regular network",
+            "\nConstant β",
+            "Combination\n(constant β, random mixing)")
+
+plot_graphs(alphas, betas, labels)
