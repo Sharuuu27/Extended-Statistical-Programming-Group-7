@@ -85,6 +85,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ## pinf = initial proportion infected.
   
   ##Initialization 
+  n <- length(beta)
   x <- rep(0, n)
   ni <- round(n * pinf)
   
@@ -169,7 +170,5 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   return(list(S = S, E = E, I = I, R = R))
 }
 
-
-
-
+nseir(beta, h, alink)
 
