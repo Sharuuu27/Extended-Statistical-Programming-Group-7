@@ -82,7 +82,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ## alpha = the daily probs I[j] -> S[i]
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   ## nc = Average contacts; nt = number of days
-  ## ping = initial proportion infected.
+  ## pinf = initial proportion infected.
   
   ##Initialization 
   x <- rep(0, n)
