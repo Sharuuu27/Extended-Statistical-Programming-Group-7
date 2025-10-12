@@ -44,7 +44,7 @@ beta <- generate_beta()
 
 get.net <- function(beta, h, nc = 15) {
   
-  n <- length(beta)
+  n <- length(beta) 
   mean_beta <- mean(beta)
   prob_denominator <- mean_beta^2 * (n - 1)
   
@@ -85,7 +85,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ## pinf = initial proportion infected.
   
   ##Initialization 
-  n <- length(beta)
+  n <- length(beta) 
   x <- rep(0, n)
   ni <- round(n * pinf)
   
@@ -155,7 +155,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
         ## Setting P_random
         P_random<- pmin(alpha[3] * nc * beta[S_random_idx]* beta[j] / prob_deno, 1) 
         ## Cap probability at 1
-        ## generate unifrom random deviates
+        ## generate uniform random deviates
         u_random <- runif(length(S_random_idx)) 
         ## determine who is infected (prob P_random)
         x[S_random_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
