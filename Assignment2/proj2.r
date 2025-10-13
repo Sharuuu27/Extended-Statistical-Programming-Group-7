@@ -185,13 +185,13 @@ plot_graphs <- function(alphas, betas, labels) {
     ## plot simulated data
     plot(epi$S,ylim=c(0,max(epi$S)),xlab=scX,ylab=scY,
          main=labels[i],
-         type="l",cex=.5,cex.main=.8,lwd=4)     ## S (black)
-    lines(epi$E,col=4,type="l",cex=.5,lwd=4)    ## E (blue)
-    lines(epi$I,col=2,type="l",cex=.5,lwd=4)    ## I (red)
-    lines(epi$R,col=3,type="l",cex=.5,lwd=4)    ## I (red)
+         type="l",cex=.5,cex.main=.8,lwd=2)     ## S (black)
+    lines(epi$E,col=4,type="l",cex=.5,lwd=2)    ## E (blue)
+    lines(epi$I,col=2,type="l",cex=.5,lwd=2)    ## I (red)
+    lines(epi$R,col=3,type="l",cex=.5,lwd=2)    ## I (red)
     legend(x="right",y="center",                ## legend
            legend=c("S", "E", "I", "R"), col=c(1, 4, 2, 3),
-           lty=1, bty="n",cex=.7,lwd=3)
+           lty=1, bty="n",cex=.7,lwd=1.5)
   }
 }
 
