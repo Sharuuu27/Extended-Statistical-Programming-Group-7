@@ -98,8 +98,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   S <- E <- I <- R <- rep(0, nt)
   
   ## Record initial population counts (Day 1)
-  S[1] <- sum(x == 0);E[1] <- sum(x == 1)
-  I[1] <- sum(x == 2);R[1] <- sum(x == 3)
+  S[1] <- n-ni;I[1] <- ni
   
   ## Loop over the remaining days
   for (t in 2:nt) {
