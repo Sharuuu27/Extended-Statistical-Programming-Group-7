@@ -33,7 +33,7 @@ generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
   return(beta)
 }  
 
-beta <- generate_beta()
+beta <- generate_beta(n=n)
 
 ### To assign regular network relations
 
