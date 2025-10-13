@@ -115,37 +115,37 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
       net <- alink[[i]] ## get the regular network contacts (indices) of j
       
       ## 1st way: household transmission 
-      ### find people who are S(0) and in j's household
+      ## find people who are S(0) and in j's household
       S_in_hh_idx <- which(x == 0 & h == h_id)
-      ### check if there are any S targets in the household
+      ## check if there are any S targets in the household
       if (length(S_in_hh_idx) > 0) {
-        ### generate uniform random deviates
+        ## generate uniform random deviates
         u_hh <- runif(length(S_in_hh_idx)) 
-        ### determine who is infected (prob alpha[1]).
+        ## determine who is infected (prob alpha[1]).
         x[S_in_hh_idx[u_hh < alpha[1]]] <- 1 ## S-> E with prob alpha[1]
       }
       
       ## 2nd way: Regular Network Transmission 
-      ### Filter out contacts who are still S(0)
+      ## Filter out contacts who are still S(0)
       S_net_idx <- net[x[net] == 0] 
       ### check if there are any S targets in the regular network
       if (length(S_net_idx) > 0) {
-        ### generate uniform random deviates
+        ## generate uniform random deviates
         u_net <- runif(length(S_net_idx)) 
-        ### determine who is infected (prob alpha[2])
+        ## determine who is infected (prob alpha[2])
         x[S_net_idx[u_net < alpha[2]]] <- 1 ## S-> E with prob alpha[2]
       }
       
       ## 3rd way: Irrespective Transmission 
       S_all_idx <- which(x == 0)
-      ### check if there are any S targets
+      ## check if there are any S targets
       if (length(S_all_idx) > 0) {
-        ### Setting P_random
-        #### Use pmin to cap probability at 1
+        ##Setting P_random
+        ##Use pmin to cap probability at 1
         P_random <- pmin(alpha[3] * nc * beta[i] * beta[S_all_idx] / prob_deno, 1)
         ### generate uniform random deviates
         u_random <- runif(length(S_all_idx)) 
-        ### determine who is infected (prob P_random)
+        ## determine who is infected (prob P_random)
         x[S_all_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
       }
     }
