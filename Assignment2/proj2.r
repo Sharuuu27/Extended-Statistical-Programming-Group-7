@@ -155,7 +155,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
     I[t] <- sum(x == 2); R[t] <- sum(x == 3)
   }
   
-  return(list(S = S, E = E, I = I, R = R))
+  return(list(S = S, E = E, I = I, R = R, t=1:nt))
 }
 
 
