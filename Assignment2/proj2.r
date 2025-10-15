@@ -51,37 +51,64 @@ beta <- generate_beta(n=n)
 get.net <- function(beta, h, nc = 15) {
   ## Function to generate the regular contact network.
   ## The network excludes household members
-  
+  print(1)
+  tic()
   n <- length(beta) 
   mean_beta <- mean(beta)
+  toc()
+  print(2)
+  tic()
   ## Calculate the denominator used in the link probability formula
   prob_denominator <- mean_beta^2 * (n - 1)
-  
+  toc()
+  print(3)
+  tic()
   # creating network list of all n people
   network <- replicate(n, integer(0), simplify = FALSE) 
-  
+  toc()
+  print(4)
+  tic()
   # creating all possible pairs
-  unique_pairs <- combn(n, 2)
-  
+  #unique_pairs <- combn(n, 2)
+  num_combinations <- n * (n - 1) / 2
+  unique_pairs <- matrix(NA, nrow = 2, ncol = num_combinations)
+  k <- 1
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      unique_pairs[, k] <- c(i, j)
+      k <- k + 1
+    }
+  }
+  toc()
+  print(5)
+  tic()
   # to identify which pairs are household members
   household_member <- h[unique_pairs[1, ]] == h[unique_pairs[2, ]]
-  
+  toc()
+  print(6)
+  tic()
   # to store the pairs which are NOT household members
   non_household <- unique_pairs[, !household_member]
-  
+  toc()
+  print(7)
+  tic()
   # contact network probability and cap at 1
   link <- ((nc * beta[non_household[1, ]] * beta[non_household[2, ]]) 
            / prob_denominator)
-  link <- pmin(link, 1)
-  
+  toc()
+  print(8)
+  tic()
   # generate uniform random numbers to compare with contact network probability
   random_u <- runif(ncol(non_household))
   regular_contact <- random_u < link
-  
+  toc()
+  print(9)
+  tic()
   # to store the regular contacts only
   network_list <- non_household[, regular_contact]
-  
-  
+  toc()
+  print(10)
+  tic()
   # To add regular contacts to each person's list
   for (j in 1:ncol(network_list)) {
     person_1 <- network_list[1, j] 
@@ -91,7 +118,7 @@ get.net <- function(beta, h, nc = 15) {
     network[[person_1]] <- c(network[[person_1]], person_2)
     network[[person_2]] <- c(network[[person_2]], person_1)
   }
-  
+  toc()
   return(network)
   
 }
@@ -113,7 +140,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   ## nc = Average contacts; nt = number of days
   ## pinf = initial proportion infected.
-  
+  tic()
   ##Initialization 
   set.seed(0)
   n <- length(beta)
