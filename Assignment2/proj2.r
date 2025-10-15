@@ -59,16 +59,11 @@ get.net <- function(beta, h, nc = 15) {
   # creating network list of all n people
   network <- replicate(n, integer(0), simplify = FALSE) 
   # creating all possible pairs
-  #unique_pairs <- combn(n, 2)
-  num_combinations <- n * (n - 1) / 2
-  unique_pairs <- matrix(NA, nrow = 2, ncol = num_combinations)
-  k <- 1
-  for (i in 1:(n - 1)) {
-    for (j in (i + 1):n) {
-      unique_pairs[, k] <- c(i, j)
-      k <- k + 1
-    }
-  }
+  row1 <- c(); row2 <- c()
+  row1 <- unlist(sapply(1:n, function(i) rep(i, n-i+1)))
+  row2 <- unlist(sapply(1:(n-1), function(i) (i+1):n))
+  unique_pairs <- array(c(row1, row2),dim=c(length(row1), 2))
+  unique_pairs <- t(unique_pairs)
   # to identify which pairs are household members
   household_member <- h[unique_pairs[1, ]] == h[unique_pairs[2, ]]
   
