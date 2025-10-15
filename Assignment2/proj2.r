@@ -27,7 +27,7 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Question 2
 ### To assign Sociability Parameter (Beta-i)
-generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
+generate_beta <- function(n = 10000, bmu = 5e-5, bsc = 1e-5) {
   beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
   return(beta)
 }  
@@ -125,22 +125,22 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
     # S -> E (Three ways)
     for (i in I_idx) {  ## Loop through each infector i
       h_id <- h[i]      ## get the household ID of i
-      net <- alink[[i]] ## get the regular network contacts (indices) of i
+      net_idx <- alink[[i]] ## get the regular network contacts (indices) of i
       
       ## 1st way: household transmission
       ## find people who are S(0) and in i's household
-      S_in_hh_idx <- which(x == 0 & h == h_id)
+      S_same_hh_idx <- which(x == 0 & h == h_id)
       ## check if there are any S targets in the household
-      if (length(S_in_hh_idx) > 0) {
+      if (length(S_same_hh_idx) > 0) {
         ## generate uniform random deviates
-        u_hh <- runif(length(S_in_hh_idx))
+        u_hh <- runif(length(S_same_hh_idx))
         ## determine who is infected (prob alpha[1]).
-        x[S_in_hh_idx[u_hh < alpha[1]]] <- 1 ## S-> E with prob alpha[1]
+        x[S_same_hh_idx[u_hh < alpha[1]]] <- 1 ## S-> E with prob alpha[1]
       }
       
       ## 2nd way: Regular Network Transmission
       ## Filter out contacts who are still S(0)
-      S_net_idx <- net[x[net] == 0]
+      S_net_idx <- net_idx[x[net_idx] == 0]
       ### check if there are any S targets in the regular network
       if (length(S_net_idx) > 0) {
         ## generate uniform random deviates
@@ -149,17 +149,17 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
         x[S_net_idx[u_net < alpha[2]]] <- 1 ## S-> E with prob alpha[2]
       }
       
-      ## 3rd way: Irrespective Transmission
-      S_all_idx <- which(x == 0)
+      ## 3rd way: Irrespective Transmission 
+      S_noinf_idx <- which(x == 0)
       ## check if there are any S targets
-      if (length(S_all_idx) > 0) {
+      if (length(S_noinf_idx) > 0) {
         ## Setting P_random
         ## Use pmin to cap probability at 1
-        P_random <- pmin(alpha[3] * nc * beta[i] * beta[S_all_idx] / prob_deno, 1)
+        P_random <- pmin(alpha[3] * nc * beta[i] * beta[S_noinf_idx] / prob_deno, 1)
         ## generate uniform random deviates
-        u_random <- runif(length(S_all_idx))
+        u_random <- runif(length(S_noinf_idx))
         ## determine who is infected (prob P_random)
-        x[S_all_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
+        x[S_noinf_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
       }
     }
     
