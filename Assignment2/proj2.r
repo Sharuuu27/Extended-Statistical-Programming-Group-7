@@ -39,7 +39,7 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Step 2: Assignment of Sociability Parameter (beta_i) and Network Generation.
 ### To assign Sociability Parameter (beta_i)
-generate_beta <- function(n = 10000, bmu = 5e-5, bsc = 1e-5) {
+generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
   # Generates the vector of sociability parameters (beta_i) for each person.
   # The gamma distribution is often used to model variability in rates.
   beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
@@ -117,7 +117,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ni <- round(n * pinf)
   
   ## Randomly set the initial number of infected individuals (I=2)
-  x[sample(n, ni)] <- 2
+  x[1:ni] <- 2
   
   ## Pre-calculate constant denominator for 3rd way
   mean_beta <- mean(beta)
@@ -147,10 +147,12 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
       ## 1st way: household transmission
       ## Find people who are S(0) and in i's household
       S_same_hh_idx <- which(x == 0 & h == h_id)
+      S_same_hh_idx_len <- length(S_same_hh_idx)
       ## check if there are any S targets in the household
-      if (length(S_same_hh_idx) > 0) {
+      if (S_same_hh_idx_len > 0) {
         ## generate uniform random deviates
-        u_hh <- runif(length(S_same_hh_idx))
+        u_hh <- runif(S_same_hh_idx_len)
+        
         ## determine who is infected (prob alpha[1]).
         x[S_same_hh_idx[u_hh < alpha[1]]] <- 1 ## S-> E with prob alpha[1]
       }
@@ -158,10 +160,11 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
       ## 2nd way: Regular Network Transmission
       ## Filter out contacts who are still S(0)
       S_net_idx <- net_idx[x[net_idx] == 0]
+      S_net_idx_len <- length(S_net_idx)
       ### check if there are any S targets in the regular network
-      if (length(S_net_idx) > 0) {
+      if (S_net_idx_len > 0) {
         ## generate uniform random deviates
-        u_net <- runif(length(S_net_idx))
+        u_net <- runif(S_net_idx_len)
         ## determine who is infected (prob alpha[2])
         x[S_net_idx[u_net < alpha[2]]] <- 1 ## S-> E with prob alpha[2]
       }
@@ -169,13 +172,14 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
       ## 3rd way: Irrespective Transmission 
       # Find all susceptible individuals
       S_noinf_idx <- which(x == 0)
+      S_noinf_idx_len <- length(S_noinf_idx)
       ## check if there are any S targets
-      if (length(S_noinf_idx) > 0) {
+      if (S_noinf_idx_len > 0) {
         ## Setting P_random
         ## Note: Use pmin to cap probability at 1
-        P_random <- pmin(alpha[3] * nc * beta[i] * beta[S_noinf_idx] / prob_deno, 1)
+        P_random <- alpha[3] * nc * beta[i] * beta[S_noinf_idx] / prob_deno
         ## generate uniform random deviates
-        u_random <- runif(length(S_noinf_idx))
+        u_random <- runif(S_noinf_idx_len)
         ## determine who is infected (prob P_random)
         x[S_noinf_idx[u_random < P_random]] <- 1 ## S-> E with prob P_random
       }
