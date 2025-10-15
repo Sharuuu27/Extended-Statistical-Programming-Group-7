@@ -19,6 +19,7 @@
 # 3. SEIR simulation function (nseir)
 # 4. Plotting function (plot_graphs)
 # 5. Scenario Comparison and Plotting
+# 6. Interpretation of the plots
 
 set.seed(0)
 
@@ -51,23 +52,12 @@ beta <- generate_beta(n=n)
 get.net <- function(beta, h, nc = 15) {
   ## Function to generate the regular contact network.
   ## The network excludes household members
-  print(1)
-  tic()
   n <- length(beta) 
   mean_beta <- mean(beta)
-  toc()
-  print(2)
-  tic()
   ## Calculate the denominator used in the link probability formula
   prob_denominator <- mean_beta^2 * (n - 1)
-  toc()
-  print(3)
-  tic()
   # creating network list of all n people
   network <- replicate(n, integer(0), simplify = FALSE) 
-  toc()
-  print(4)
-  tic()
   # creating all possible pairs
   #unique_pairs <- combn(n, 2)
   num_combinations <- n * (n - 1) / 2
@@ -79,36 +69,20 @@ get.net <- function(beta, h, nc = 15) {
       k <- k + 1
     }
   }
-  toc()
-  print(5)
-  tic()
   # to identify which pairs are household members
   household_member <- h[unique_pairs[1, ]] == h[unique_pairs[2, ]]
-  toc()
-  print(6)
-  tic()
+  
   # to store the pairs which are NOT household members
   non_household <- unique_pairs[, !household_member]
-  toc()
-  print(7)
-  tic()
   # contact network probability and cap at 1
   link <- ((nc * beta[non_household[1, ]] * beta[non_household[2, ]]) 
            / prob_denominator)
-  toc()
-  print(8)
-  tic()
+  
   # generate uniform random numbers to compare with contact network probability
   random_u <- runif(ncol(non_household))
   regular_contact <- random_u < link
-  toc()
-  print(9)
-  tic()
   # to store the regular contacts only
   network_list <- non_household[, regular_contact]
-  toc()
-  print(10)
-  tic()
   # To add regular contacts to each person's list
   for (j in 1:ncol(network_list)) {
     person_1 <- network_list[1, j] 
@@ -118,7 +92,7 @@ get.net <- function(beta, h, nc = 15) {
     network[[person_1]] <- c(network[[person_1]], person_2)
     network[[person_2]] <- c(network[[person_2]], person_1)
   }
-  toc()
+  
   return(network)
   
 }
@@ -140,7 +114,7 @@ nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2,
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   ## nc = Average contacts; nt = number of days
   ## pinf = initial proportion infected.
-  tic()
+  
   ##Initialization 
   set.seed(0)
   n <- length(beta)
@@ -295,3 +269,46 @@ labels <- c("Default parameters\n(αh=.1,αc=αr=.01)",
 
 ## Plot graphs
 plot_graphs(alphas, betas, labels, h=h, alink=alink)
+
+
+## The apparent effect of the household and network structure, relative to random mixing
+# 1. Default parameters
+# (alpha_h =.1, alpha_c = alpha_r =.01; beta varied) (left top)
+#
+#  The number of infected (I, red line) and exposed (E, blue line) peaks 
+# around days 40 and 35, respectively. The susceptible (S, black line) population 
+# declines, reaching a minimum of approximately 150 on day 60. 
+# The recovered (R, green line) population increases and plateaus near 800.
+
+# 2. Without household and regular network
+# (alpha_h = alpha_c = 0, alpha_r =.04; beta varied) (left bottom)
+#  
+# The spread and resolution are faster than in the default scenario. 
+# The peaks of states I and S are higher at approximately 200 and 150, respectively. 
+# The peaks also occur earlier, around days 25 and 20 respectively, 
+# suggesting that the epidemic spreads and resolves relatively quickly. 
+# The population of the state S drops sharply, reaching a minimum of 
+# approximately 200 on day 40. The state's R population plateaus at approximately 800. 
+# The high transmission through random mixing (alpha_h =.04) likely drives
+# this rapid spread.
+
+
+# 3. Constant beta
+# (alpha_h =.1, alpha_c = alpha_r =.01; beta constant) (right top)
+#
+# The overall shape of the epidemic is very similar to the default parameters, 
+# but the minimum value of state S's population is lower, approximately 150, 
+# and the maximum value of R's population is higher, approximately 850. 
+# This suggests that the homogeneity of beta slightly increased the spread.
+
+
+# 4. Constant beta & random mixing (alpha_h = alpha_c = 0, alpha_r =.04; beta constant) (right bottom)
+# 
+# The peaks of the I and E states are higher than in scenarios 1 and 3, 
+# at around 200 and 150 respectively. These peaks occur earlier, 
+# on days 35 and 25 respectively.
+# The minimum value of state S's population is lower, approximately 100,
+# and the maximum value of R's population is higher, approximately 900. 
+# Similar to 3rd scenario, using a constant beta over a varied beta 
+# slightly increases the size of the epidemic.
+
