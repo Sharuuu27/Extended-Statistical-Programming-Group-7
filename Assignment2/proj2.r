@@ -20,11 +20,10 @@ set.seed(0)
 ## Question 1
 ### To assign the n people to their unique household ID
 
-n <- 1000
+n <- 10000
 hmax <- 5
 
 h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
-
 
 ## Question 2
 ### To assign Sociability Parameter (Beta-i)
@@ -35,7 +34,6 @@ generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
 
 beta <- generate_beta(n=n)
 
-### To assign regular network relations
 
 get.net <- function(beta, h, nc = 15) {
   
@@ -43,28 +41,43 @@ get.net <- function(beta, h, nc = 15) {
   mean_beta <- mean(beta)
   prob_denominator <- mean_beta^2 * (n - 1)
   
+  # creating network list of all n people
   network <- replicate(n, integer(0), simplify = FALSE) 
-  #creating network list of all n people
   
-  for (i in 1:(n - 1)) {
-    for (j in (i + 1):n) { # to make sure the pairs are not itself
-      if (h[i] == h[j]) { 
-        next # if i and j of the same household, go to the next pair
-      }
-      
-      link <- (nc * beta[i] * beta[j]) / prob_denominator 
-      # probability of contact network
-      
-      link <- min(link, 1) # to ensure the probability does not exceed 1
-      
-      if (runif(1) < link) { # to check weather i and j are regular contacts
-        network[[i]] <- c(network[[i]], j) # assign i to j's contact list
-        network[[j]] <- c(network[[j]], i) # assign j to i's contact list
-      }
-    }
+  # creating all possible pairs
+  unique_pairs <- combn(n, 2)
+  
+  # to identify which pairs are household members
+  household_member <- h[unique_pairs[1, ]] == h[unique_pairs[2, ]]
+  
+  # to store the pairs which are NOT household members
+  non_household <- unique_pairs[, !household_member]
+  
+  # contact network probability and cap at 1
+  link <- ((nc * beta[non_household[1, ]] * beta[non_household[2, ]]) 
+           / prob_denominator)
+  link <- pmin(link, 1)
+  
+  # generate uniform random numbers to compare with contact network probability
+  random_u <- runif(ncol(non_household))
+  regular_contact <- random_u < link
+  
+  # to store the regular contacts only
+  network_list <- non_household[, regular_contact]
+  
+  
+  # To add regular contacts to each person's list
+  for (j in 1:ncol(network_list)) {
+    person_1 <- network_list[1, j] 
+    person_2 <- network_list[2, j] 
+    
+    
+    network[[person_1]] <- c(network[[person_1]], person_2)
+    network[[person_2]] <- c(network[[person_2]], person_1)
   }
   
   return(network)
+  
 }
 
 alink <- get.net(beta, h)
