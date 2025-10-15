@@ -1,0 +1,149 @@
+# SEIR with social structure (strict per-pair transmission; scan-reduced)
+# States: 0 = S (susceptible), 1 = E (exposed), 2 = I (infectious), 3 = R (removed)
+# This version:
+#   • EXACTLY implements the three infection routes as separate Bernoulli trials per (i, j).
+#   • Does NOT merge probabilities or use Poisson approximations.
+#   • Reduces scans by maintaining a live susceptible set (S_mask/S_idx)
+#     and pre-indexing household members.
+
+nseir <- function(beta, h, alink,
+                  alpha = c(.1, .01, .01),   # c(alpha_household, alpha_network, alpha_random)
+                  delta = .2,                # daily probability I -> R
+                  gamma = .4,                # daily probability E -> I
+                  nc    = 15,                # average contacts (used in random mixing term)
+                  nt    = 100,               # number of simulated days
+                  pinf  = .005) {            # initial infected proportion
+
+  set.seed(0)                                # Fix RNG seed for reproducibility
+
+  n <- length(beta)                          # Population size
+  x <- numeric(n)                            # State vector (0/1/2/3)
+  ni <- round(n * pinf)                      # Number initially infectious
+  x[sample.int(n, ni)] <- 2                  # Randomly assign initial infectious (I)
+
+  # Precompute constants for the random mixing route:
+  # per-pair probability: p_ij = alpha_r * nc * beta_i * beta_j / (mean(beta)^2 * (n - 1))
+  mean_beta <- mean(beta)                    # Mean of beta across population
+  prob_deno <- mean_beta^2 * (n - 1)         # Denominator specified in the assignment
+  c_rand    <- alpha[3] * nc / prob_deno     # Constant multiplier for p_ij in random mixing
+
+  # Pre-index households to avoid repeated global scans:
+  # h_fac maps each person to a compact id 1..H; split() builds member lists per household.
+  h_fac <- as.integer(factor(h))             # Compact household ids
+  H     <- max(h_fac)                        # Number of unique households
+  household_members <- split(seq_len(n), h_fac)  # household_members[[k]] -> indices in household k
+
+  # Output time series containers
+  S <- E <- I <- R <- numeric(nt)            # Daily counts of S/E/I/R
+  S[1] <- sum(x == 0); E[1] <- sum(x == 1)   # Day 1 tallies after initialization
+  I[1] <- sum(x == 2); R[1] <- sum(x == 3)
+
+  # Main daily loop
+  for (t in 2:nt) {
+
+    # Draw a single uniform(0,1) vector for fixed transitions (same style as original code).
+    u <- runif(n)
+
+    # Snapshot infectors BEFORE they may recover today; these drive today's infections.
+    I_idx_today <- which(x == 2)
+
+    # Fixed-probability transitions:
+    #   Infectious recover with prob delta; Exposed become Infectious with prob gamma.
+    x[x == 2 & u < delta] <- 3               # I -> R
+    x[x == 1 & u < gamma] <- 2               # E -> I
+
+    # Maintain a live set of susceptibles for this day to avoid repeated which(x==0).
+    S_mask <- (x == 0)                       # Boolean mask of current susceptibles
+    if (any(S_mask) && length(I_idx_today) > 0) {
+
+      # Convert mask to index vector; we will keep it updated as people get infected.
+      S_idx <- which(S_mask)
+
+      # For each infector i (strict per-pair logic preserved):
+      for (i in I_idx_today) {
+
+        # --------------------------
+        # (1) Household transmission
+        #   For j in the same household as i (and still S), do a Bernoulli( alpha[1] ).
+        # --------------------------
+        hh <- household_members[[h_fac[i]]]  # Members in i's household
+        if (length(hh)) {
+          targets <- hh[S_mask[hh]]          # Filter to those still susceptible
+          if (length(targets)) {
+            u_hh <- runif(length(targets))   # One draw per (i, j) in household
+            got  <- targets[u_hh < alpha[1]] # Those infected via household route
+            if (length(got)) {
+              x[got] <- 1                    # Set newly infected to E
+              S_mask[got] <- FALSE           # Update live susceptible mask
+              # Remove these positions from S_idx efficiently using negative indexing
+              if (length(S_idx)) {
+                # Identify positions of 'got' inside S_idx (fast when small)
+                pos <- match(got, S_idx, nomatch = 0L)
+                if (any(pos)) S_idx <- S_idx[-pos[pos > 0L]]
+              }
+              if (!length(S_idx)) break      # No susceptibles left
+            }
+          }
+        }
+
+        if (!length(S_idx)) break             # Early exit if no S remain
+
+        # --------------------------
+        # (2) Regular network transmission
+        #   For j in i's regular contacts (and still S), do a Bernoulli( alpha[2] ).
+        # --------------------------
+        net <- alink[[i]]                     # i's regular network neighbors
+        if (length(net)) {
+          targets <- net[S_mask[net]]         # Only neighbors that are still susceptible
+          if (length(targets)) {
+            u_net <- runif(length(targets))   # One draw per (i, j) network pair
+            got   <- targets[u_net < alpha[2]]# Those infected via network route
+            if (length(got)) {
+              x[got] <- 1
+              S_mask[got] <- FALSE
+              if (length(S_idx)) {
+                pos <- match(got, S_idx, nomatch = 0L)
+                if (any(pos)) S_idx <- S_idx[-pos[pos > 0L]]
+              }
+              if (!length(S_idx)) break
+            }
+          }
+        }
+
+        if (!length(S_idx)) break             # Early exit if no S remain
+
+        # --------------------------
+        # (3) Random mixing transmission
+        #   For every remaining susceptible j, do a Bernoulli with:
+        #   p_ij = alpha[3] * nc * beta[i] * beta[j] / (mean(beta)^2 * (n - 1))
+        # --------------------------
+        if (length(S_idx)) {
+          P_random <- c_rand * beta[i] * beta[S_idx]  # Vector of per-pair probabilities for current i
+          P_random <- pmin(P_random, 1)               # Defensive cap for numerical stability
+          u_rand <- runif(length(S_idx))              # One draw per (i, j) random-mixing pair
+          got_pos <- which(u_rand < P_random)         # Positions (within S_idx) that got infected
+          if (length(got_pos)) {
+            got <- S_idx[got_pos]                     # Convert positions to actual indices
+            x[got] <- 1
+            S_mask[got] <- FALSE
+            # Remove infected positions from S_idx in O(1) using negative indexing by position
+            if (length(got_pos) < length(S_idx)) {
+              S_idx <- S_idx[-got_pos]
+            } else {
+              S_idx <- integer(0)                     # All susceptibles got removed
+            }
+          }
+        }
+
+        if (!length(S_idx)) break                     # No susceptibles left for today
+      } # end for each infector i
+    }   # end if any susceptibles and infectors
+
+    # Daily tallies after all transitions and infections
+    S[t] <- sum(x == 0); E[t] <- sum(x == 1)
+    I[t] <- sum(x == 2); R[t] <- sum(x == 3)
+  }     # end for t
+
+  # Return the time series (S, E, I, R) and day index
+  list(S = S, E = E, I = I, R = R, t = 1:nt)
+}
