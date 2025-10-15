@@ -39,7 +39,7 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Step 2: Assignment of Sociability Parameter (beta_i) and Network Generation.
 ### To assign Sociability Parameter (beta_i)
-generate_beta <- function(n = 10000, bmu = 5e-5, bsc = 1e-5) {
+generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
   # Generates the vector of sociability parameters (beta_i) for each person.
   # The gamma distribution is often used to model variability in rates.
   beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
