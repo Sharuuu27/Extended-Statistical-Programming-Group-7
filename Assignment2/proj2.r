@@ -283,10 +283,10 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # in state S(susceptible) at the end of the simulation compared to other 2 scenarios. 
 
 # Furthermore, differences in the settings of the sociability parameter may
-# suggest that individuals with a relatively high level of sociability may spread
-# the infection more quickly with a variable sociability parameter (beta),
-# resulting in faster overall expansion compared to a scenario in which everyone
-# has an average level of sociability.
+# suggest that individuals with a relatively low level of sociability may suppress
+# the infection with a variable sociability parameter, resulting in slower 
+# overall expansion compared to a scenario in which everyone has an average level
+# of sociability.
 
 
 ### Details of each graph
