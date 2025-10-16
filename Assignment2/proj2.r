@@ -231,7 +231,7 @@ plot_graphs <- function(alphas, betas, labels, h, alink) {
     lines(x=epi$t, y=epi$I,
           col=2,type="l",cex=.5,lwd=2)      ## I (red)
     lines(x=epi$t, y=epi$R,
-          col=3,type="l",cex=.5,lwd=2)      ## R (recovered)
+          col=3,type="l",cex=.5,lwd=2)      ## R (green)
     legend(x="right",y="center",            ## legend
            legend=c("S", "E", "I", "R"), col=c(1, 4, 2, 3),
            lty=1, bty="n",cex=.7,lwd=1.5)
