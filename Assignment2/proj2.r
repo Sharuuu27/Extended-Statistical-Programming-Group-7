@@ -4,9 +4,12 @@
 # 3. Yasuhiro Hara (hiroh-git) - S2826059
 
 # Team Contributions:
-# Yasuhiro - 
-# Yu-Hsuan - 
-# Shivasharini - 
+# Shivasharini - Developed the household vector h generation (Q1) 
+                #and the get.net function for the regular contact network (Q2)
+# Yu-Hsuan - Implemented the core SEIR simulation function, nseir, 
+            #which includes the social structure elements (Q3)
+# Yasuhiro- Developed the function for plotting the simulation dynamics (Q4) 
+            #and performed the comparative analysis of the four model scenarios (Q5)
 
 ## OVERVIEW: STOCHASTIC SEIR SIMULATION WITH SOCIAL STRUCTURE
 # This script implements a stochastic SEIR epidemiological model.
