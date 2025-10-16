@@ -12,7 +12,7 @@
             #and performed the comparative analysis of the four model scenarios (Q5)
 
 # Github repo link:
-# https://github.com/Sharuuu27/Extended-Statistical-Programming-Group-7/tree/051195f298f4d03b5cf6f2924a583a871a25b52c/Assignment2 
+# https://github.com/Sharuuu27/Extended-Statistical-Programming-Group-7/tree/main/Assignment2 
 
 ## OVERVIEW: STOCHASTIC SEIR SIMULATION WITH SOCIAL STRUCTURE
 # This script implements a stochastic SEIR epidemiological model.
