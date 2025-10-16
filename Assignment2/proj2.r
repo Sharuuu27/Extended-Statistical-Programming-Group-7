@@ -28,7 +28,7 @@ set.seed(0)
 
 ## Step 1: Household Assignment
 ### To assign the n people to their unique household ID
-n <- 10000 ## Define population size N
+n <- 1000 ## Define population size N
 hmax <- 5  ## Max household size
 
 ## Create household vector 'h' such that household sizes are 
@@ -42,10 +42,10 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Step 2: Assignment of Sociability Parameter (beta_i) and Network Generation.
 ### To assign Sociability Parameter (beta_i)
-generate_beta <- function(n = 1000, bmu = 5e-5, bsc = 1e-5) {
+generate_beta <- function(n = 1000) {
   # Generates the vector of sociability parameters (beta_i) for each person.
-  # The gamma distribution is often used to model variability in rates.
-  beta <- rgamma(n, shape=bmu/bsc, scale=bsc)
+  # Each beta_i is drawn from a Uniform(0,1) distribution
+  beta <- runif(n, min=0, max=1)
   return(beta)
 }  
 
@@ -277,22 +277,22 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # 1. Default parameters
 # (alpha_h =.1, alpha_c = alpha_r =.01; beta varied) (left top)
 #
-#  The number of infected (I, red line) and exposed (E, blue line) peaks 
-# around days 40 and 35, respectively. The susceptible (S, black line) population 
-# declines, reaching a minimum of approximately 150 on day 60. 
+# The number of infected (I, red line) and exposed (E, blue line) peaks 
+# around days 38 and 30, respectively. The susceptible (S, black line) 
+# population declines, reaching a minimum of approximately 200 on day 50. 
 # The recovered (R, green line) population increases and plateaus near 800.
 
 # 2. Without household and regular network
 # (alpha_h = alpha_c = 0, alpha_r =.04; beta varied) (left bottom)
 #  
-# The spread and resolution are faster than in the default scenario. 
-# The peaks of states I and S are higher at approximately 200 and 150, respectively. 
-# The peaks also occur earlier, around days 25 and 20 respectively, 
-# suggesting that the epidemic spreads and resolves relatively quickly. 
-# The population of the state S drops sharply, reaching a minimum of 
-# approximately 200 on day 40. The state's R population plateaus at approximately 800. 
-# The high transmission through random mixing (alpha_h =.04) likely drives
-# this rapid spread.
+# The spread and resolution are faster than in the default scenario. The 
+# peaks of states I and S are higher at approximately 200 and 150, respectively. 
+# The peaks of infected and exposed also occur earlier, around days 25 and 
+# 20 respectively, suggesting that the epidemic spreads and resolves 
+# relatively quickly. The population of the state S drops sharply, reaching a 
+# minimum of approximately 200 on day 40. The state's R population plateaus 
+# at approximately 800. The high transmission through random mixing (alpha_r =.04) 
+# likely drives this rapid spread.
 
 
 # 3. Constant beta
@@ -304,15 +304,15 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # This suggests that the homogeneity of beta slightly increased the spread.
 
 
-# 4. Constant beta & random mixing (alpha_h = alpha_c = 0, alpha_r =.04; beta constant) (right bottom)
+# 4. Constant beta & random mixing 
+#(alpha_h = alpha_c = 0, alpha_r =.04; beta constant) (right bottom)
 # 
 # The peaks of the I and E states are higher than in scenarios 1 and 3, 
-# at around 200 and 150 respectively. These peaks occur earlier, 
-# on days 35 and 25 respectively.
-# The minimum value of state S's population is lower, approximately 100,
-# and the maximum value of R's population is higher, approximately 900. 
-# Similar to 3rd scenario, using a constant beta over a varied beta 
-# slightly increases the size of the epidemic.
+# at around 200 and 150 respectively. These peaks occur earlier, on days 37 
+# and 30 respectively. The minimum value of state S's population is lower, 
+# approximately 100,and the maximum value of R's population is higher, 
+# approximately 900. Similar to 3rd scenario, using a constant beta over a 
+# varied beta slightly increases the size of the epidemic.
 
 
 ### Conclusion:
@@ -323,15 +323,11 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # the higher rate of transmission (alpha = 0.04) compared to the default 
 # transmission rate (alpha = 0.01). 
 
-# The sociability parameter, Beta is generated with a gamma distribution which 
-# is a heavily right skewed distribution that makes a fewer number of the 
-# population having very high sociability parameter which then contribute 
-# significantly in infecting others. Therefore, assuming constant Beta with 
-# random mixing only (bottom right), makes everyone has a higher probability 
-# to infect others in the population (due to bigger numerator of the daily 
-# probability of i infecting j). This is apparent with the least number of 
-# people remaining in state S(susceptible) among all the other 3 scenarios.
-
+# Beta is drawn from Uniform(0,1). In the “constant Beta + random mixing” 
+# setting (bottom right; ah=ac=0, ar=.04), the epidemic spreads the most, as 
+# evidenced by the smallest final S among the four panels. This supports that, 
+# under these parameters, equal Beta with random mixing leads to the greatest 
+# overall spread.
 
 
 
