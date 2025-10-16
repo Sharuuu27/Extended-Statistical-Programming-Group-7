@@ -42,6 +42,7 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Step 2: Assignment of Sociability Parameter (beta_i) and Network Generation.
 ### To assign Sociability Parameter (beta_i)
+<<<<<<< HEAD
 generate_beta <- function(n = 1000) {
   # Generates the vector of sociability parameters (beta_i) for each person.
   # Each beta_i is drawn from a Uniform(0,1) distribution
@@ -50,7 +51,11 @@ generate_beta <- function(n = 1000) {
 }  
 
 beta <- generate_beta(n=n)
+=======
+>>>>>>> 964236c6690dfbcb4b16542ba993b94ba38d7f16
 
+## Generate varied beta based on Uniform(0, 1) random variables
+beta <- runif(n)
 
 get.net <- function(beta, h, nc = 15) {
   ## Function to generate the regular contact network.
@@ -102,7 +107,7 @@ alink <- get.net(beta, h)
 ## SEIR simulation model with social structure
 nseir <- function(beta, h, alink, alpha = c(.1, .01, .01), delta = .2, 
                   gamma = .4, nc = 15,nt = 100, pinf = .005) {
-  ## beta = the transmission rate parameter;
+  ## beta = socialibility parameter;
   ## h = household each person belongs to;
   ## alpha = the daily probs I[i] -> S[j]
   ## Note: Each alpha stands for 
@@ -256,11 +261,10 @@ alphas <- array(c(c(.1,.01,.01),
                 dim=c(3,4))
 
 set.seed(0)
-## Generate varied beta based on Uniform(0, 1) random variables
-beta_u <- runif(n)
+
 ## Generate constant beta set to the average of beta_u for every element
-beta_mean <- rep(mean(beta_u),n)
-betas <- array(c(beta_u,beta_u,beta_mean,beta_mean),
+beta_mean <- rep(mean(beta),n)
+betas <- array(c(beta,beta,beta_mean,beta_mean),
                dim=c(n,4))
 
 ## Labels describing each scenario for plotting
