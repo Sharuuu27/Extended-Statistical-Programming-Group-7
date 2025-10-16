@@ -315,19 +315,10 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # the higher rate of transmission (alpha = 0.04) compared to the default 
 # transmission rate (alpha = 0.01). 
 
-<<<<<<< HEAD
-# Beta is drawn from Uniform(0,1). In the “constant Beta + random mixing” 
-# setting (bottom right; ah=ac=0, ar=.04), the epidemic spreads the most, as 
-# evidenced by the smallest final S among the four panels. This supports that, 
-# under these parameters, equal Beta with random mixing leads to the greatest 
-# overall spread.
-
-
-=======
 # When assuming constant Beta with random mixing only (bottom right), makes 
 # everyone has a higher probability to infect others in the population (due to 
 # bigger numerator of the daily probability of i infecting j). This is apparent 
 # with the least number of people remaining in state S(susceptible) among all 
 # the other 3 scenarios.
->>>>>>> 9e366d3f63245c5724150f02169e5e28232221d6
+
 
