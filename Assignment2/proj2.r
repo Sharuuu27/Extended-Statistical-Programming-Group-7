@@ -42,18 +42,6 @@ h <- sample(rep(1:n, times = sample(1:hmax, n, replace = TRUE))[1:n])
 
 ## Step 2: Assignment of Sociability Parameter (beta_i) and Network Generation.
 ### To assign Sociability Parameter (beta_i)
-<<<<<<< HEAD
-generate_beta <- function(n = 1000) {
-  # Generates the vector of sociability parameters (beta_i) for each person.
-  # Each beta_i is drawn from a Uniform(0,1) distribution
-  beta <- runif(n, min=0, max=1)
-  return(beta)
-}  
-
-beta <- generate_beta(n=n)
-=======
->>>>>>> 964236c6690dfbcb4b16542ba993b94ba38d7f16
-
 ## Generate varied beta based on Uniform(0, 1) random variables
 beta <- runif(n)
 
@@ -327,6 +315,7 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # the higher rate of transmission (alpha = 0.04) compared to the default 
 # transmission rate (alpha = 0.01). 
 
+<<<<<<< HEAD
 # Beta is drawn from Uniform(0,1). In the “constant Beta + random mixing” 
 # setting (bottom right; ah=ac=0, ar=.04), the epidemic spreads the most, as 
 # evidenced by the smallest final S among the four panels. This supports that, 
@@ -334,4 +323,11 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # overall spread.
 
 
+=======
+# When assuming constant Beta with random mixing only (bottom right), makes 
+# everyone has a higher probability to infect others in the population (due to 
+# bigger numerator of the daily probability of i infecting j). This is apparent 
+# with the least number of people remaining in state S(susceptible) among all 
+# the other 3 scenarios.
+>>>>>>> 9e366d3f63245c5724150f02169e5e28232221d6
 
