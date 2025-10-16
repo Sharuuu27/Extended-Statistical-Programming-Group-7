@@ -316,15 +316,9 @@ plot_graphs(alphas, betas, labels, h=h, alink=alink)
 # the higher rate of transmission (alpha = 0.04) compared to the default 
 # transmission rate (alpha = 0.01). 
 
-# The sociability parameter, Beta is generated with a gamma distribution which 
-# is a heavily right skewed distribution that makes a fewer number of the 
-# population having very high sociability parameter which then contribute 
-# significantly in infecting others. Therefore, assuming constant Beta with 
-# random mixing only (bottom right), makes everyone has a higher probability 
-# to infect others in the population (due to bigger numerator of the daily 
-# probability of i infecting j). This is apparent with the least number of 
-# people remaining in state S(susceptible) among all the other 3 scenarios.
-
-
-
+# When assuming constant Beta with random mixing only (bottom right), makes 
+# everyone has a higher probability to infect others in the population (due to 
+# bigger numerator of the daily probability of i infecting j). This is apparent 
+# with the least number of people remaining in state S(susceptible) among all 
+# the other 3 scenarios.
 
