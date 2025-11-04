@@ -31,7 +31,7 @@ matrixes <- function(data, k = 80,...){
   tn <- data$julian[n]
   t_coverage <- t1:tn
   mid_knots <- seq(from = t1, to = tn, length.out = k - 2)
-  knot <- c(rep(min(t_coverage),3), mid_knots, rep(max(t_coverage),3))
+  knot <- c(rep(t1,3), mid_knots, rep(tn,3))
   x_tilde <- splineDesign(knots=knot,x=t_coverage,ord=4)
   s <- crossprod(diff(diag(k), diff=2))
   x <- matrix(0, nrow = n, ncol = k)
