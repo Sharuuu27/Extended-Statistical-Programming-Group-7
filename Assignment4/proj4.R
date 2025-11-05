@@ -22,8 +22,11 @@
 # 5. 
 # 6. 
 
+#setwd("file")
+data <- read.table("engcov.txt",header = TRUE)
 
 #Question1
+<<<<<<< Updated upstream
 #setwd("file")
 library(splines)
 
@@ -44,9 +47,38 @@ matrixes <- function(data, k=80){
   pd <- pd / sum(pd)
   for (i in 1:n) {
     j_max <- min(29+i, k)
+=======
+# Define a function to compute X_tilde, X and S
+matrixes <- function(data, k = 80){
+  n <- nrow(data) # number of observation days, n
+  t1 <- data$julian[1] - 30  # earliest infection day, setting as t1-30
+  tn <- data$julian[n]       # latest infection day
+  t_coverage <- t1:tn        # the scope of infection days
+  mid_knots <- seq(from = t1, to = tn, length.out = k - 2) 
+  # k-2 knots cover the scope of infection days
+  unit <- (tn-t1)/(k-2-1) 
+  knot <- seq(t1-unit*3, tn+unit*3,length.out=(k+4))
+  # Adding 6 points beyond the original k+2 knots, ensuring a total of k+4 knots
+  x_tilde <- splineDesign(knots=knot,x=t_coverage,ord=4)
+  # design matrix, X_tilde, for the B-splines defined by knots at the values 
+  # in the scope of infection days
+  s <- crossprod(diff(diag(k), diff=2)) 
+  # smoothing penalty matrix S
+  x <- matrix(0, nrow = n, ncol = k)
+  # Initialise the death model matrix X
+  d <- 1:80 # the range of days from infection to death.
+  edur <- 3.151 # mean parameter for the log-normal distribution.
+  sdur <- 0.469 # Standard deviation parameter for the log-normal distribution
+  pd <- dlnorm(d, edur, sdur) # probability density
+  pd <- pd / sum(pd) # Normalize probabilities pd
+  for (i in 1:n) {
+    j_max <- min(29 + i, 80) 
+    #Determine the maximum interval j_max for the convolution limit.
+>>>>>>> Stashed changes
     for (j in 1:j_max) {
       y <- 30+i-j 
       x[i,] <- x[i,]+x_tilde[y,]*pd[j]
+      # X_{i,k}=\sum_{j=1}^{min(29+i,80)}\tilde{X}_{(30+i-j),k}\times \pi_{j}
     }
   }
   list(X_tilde = x_tilde, X = x, S = s)
