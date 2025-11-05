@@ -62,7 +62,6 @@ matrixes <- function(data, k = 80){
   list(X_tilde = x_tilde, X = x, S = s)
 }
 
-data <- read.table("engcov.txt", header=TRUE)
 data$date <- as.Date(data$date, format = "%d/%m/%y")
 
 m <- matrixes(data)
