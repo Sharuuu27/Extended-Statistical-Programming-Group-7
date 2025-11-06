@@ -47,7 +47,7 @@ matrixes <- function(data, k = 80){
   # smoothing penalty matrix S
   x <- matrix(0, nrow = n, ncol = k)
   # initialise the death model matrix X
-  d <- 1:k # the range of days from infection to death.
+  d <- 1:80 # the range of days from infection to death.
   edur <- 3.151 # mean parameter for the log-normal distribution.
   sdur <- 0.469 # standard deviation parameter for the log-normal distribution
   pd <- dlnorm(d, edur, sdur) # probability density
