@@ -112,7 +112,7 @@ head(fd);head(gpnll(gamma0,lambda0,x=x,y=y,s=s))
 ## Question3
 fit <- optim(par=gamma0,fn=pnll,gr=gpnll,
              lambda=5e-5,x=x,y=y,s=s,
-             method="BFGS",hessian=TRUE)
+             method="BFGS") #, hessian=TRUE
 # Use optim function with BFGS method to optimise
 gamma_h <- fit$par       # Get the fitted optimal parameters gamma_h
 beta_h <- exp(gamma_h)   # Calculate the fitted B-spline coefficients beta_h
