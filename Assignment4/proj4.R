@@ -25,6 +25,7 @@
 library(splines)
 #setwd("file")
 data <- read.table("engcov.txt",header = TRUE)
+data$date <- as.Date(data$date, format = "%d/%m/%y")
 
 #Question1
 matrixes <- function(data, k = 80){
@@ -33,7 +34,6 @@ matrixes <- function(data, k = 80){
   t1 <- data$julian[1] - 30  # earliest infection day, setting as t1-30
   tn <- data$julian[n]       # latest infection day
   t_coverage <- t1:tn        # the scope of infection days
-  mid_knots <- seq(from = t1, to = tn, length.out = k - 2) 
   # k-2 knots cover the scope of infection days
   unit <- (tn-t1)/(k-2-1) 
   knot <- seq(t1-unit*3, tn+unit*3,length.out=(k+4))
@@ -45,7 +45,7 @@ matrixes <- function(data, k = 80){
   # smoothing penalty matrix S
   x <- matrix(0, nrow = n, ncol = k)
   # initialise the death model matrix X
-  d <- 1:80 # the range of days from infection to death.
+  d <- 1:k # the range of days from infection to death.
   edur <- 3.151 # mean parameter for the log-normal distribution.
   sdur <- 0.469 # standard deviation parameter for the log-normal distribution
   pd <- dlnorm(d, edur, sdur) # probability density
@@ -61,8 +61,6 @@ matrixes <- function(data, k = 80){
   }
   list(X_tilde = x_tilde, X = x, S = s) # return the three computed matrices
 }
-
-data$date <- as.Date(data$date, format = "%d/%m/%y")
 
 m <- matrixes(data)
 x_tilde <- m$X_tilde
@@ -125,8 +123,7 @@ t_coverage <- t1:tn
 
 plot(data$julian, y, type="p", pch=19, col="darkgray", cex=.8,
      xlab="Day", ylab="Deaths/Infection", 
-     xlim=c(t1,tn), ylim=range(c(f_h, data$deaths)),
-     main="")
+     xlim=c(t1,tn), ylim=range(c(f_h, data$deaths)))
 lines(data$julian, mu_h, col="black", lwd=2)
 
 lines(t_coverage, f_h, type="l", col="blue", lwd=2)
