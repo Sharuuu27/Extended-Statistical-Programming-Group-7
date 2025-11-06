@@ -27,7 +27,9 @@ library(splines)
 data <- read.table("engcov.txt",header = TRUE)
 data$date <- as.Date(data$date, format = "%d/%m/%y")
 
-#Question1
+
+## Question1
+
 matrixes <- function(data, k = 80){
 # define a function to compute X_tilde, X and S 
   n <- nrow(data) # number of observation days, n
@@ -62,14 +64,15 @@ matrixes <- function(data, k = 80){
   list(X_tilde = x_tilde, X = x, S = s) # return the three computed matrices
 }
 
+# extract x_tilde, x, and s 
 m <- matrixes(data)
 x_tilde <- m$X_tilde
 x <- m$X
 s <- m$S
 y <- data$deaths
-# extract x_tilde, x, and s 
 
-#Question2
+
+## Question2
 
 pnll <- function(gamma,x,y,s,lambda){
 # define the penalised negative log likelihood (pnll) function
@@ -105,7 +108,8 @@ for (i in seq_along(gamma0)) { # loop over gamma0
 head(fd);head(gpnll(gamma0,lambda0,x=x,y=y,s=s)) 
 # the result indicating that gpnll is coded correctly
 
-#Question3
+
+## Question3
 fit <- optim(par=gamma0,fn=pnll,gr=gpnll,
              lambda=5e-5,x=x,y=y,s=s,
              method="BFGS",hessian=TRUE)
@@ -115,23 +119,122 @@ beta_h <- exp(gamma_h)   # Calculate the fitted B-spline coefficients beta_h
 mu_h <- x %*% beta_h     # Calculate the fitted expected deaths mu_h
 f_h<- x_tilde %*% beta_h # Calculate the fitted new infection curve f_h
 
-
+# Set parameters
 n <- nrow(data)
 t1 <- data$julian[1] - 30
 tn <- data$julian[n]
 t_coverage <- t1:tn
 
+# Plot actual deaths data (gray dots)
 plot(data$julian, y, type="p", pch=19, col="darkgray", cex=.8,
      xlab="Day", ylab="Deaths/Infection", 
      xlim=c(t1,tn), ylim=range(c(f_h, data$deaths)))
-lines(data$julian, mu_h, col="black", lwd=2)
-
-lines(t_coverage, f_h, type="l", col="blue", lwd=2)
+# Plot fitted deaths data (black line)
+lines(data$julian, mu_h, col="black", lwd=1.5)
+# Plot fitted infection data (blue line)
+lines(t_coverage, f_h, type="l", col="blue", lwd=1.5)
+# Plot legend
 legend("topright", 
-       legend=c("Observed Deaths", "Fitted Deaths", "Estimated Infection"), 
+       legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
+       col=c("darkgray", "black", "blue"),
+       pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
+
+
+## Question4
+
+# Defining the grid
+lsp <- seq(-13, -7, length=50)
+lambdas <- exp(lsp)
+#n <- length(y) # number of observation
+#k <- nrow(data) # number of parameters: 80
+
+BIC <- EDF <- rep(0, length(lsp))
+
+# Initial parameter（from Step 3）
+gamma_start <- gamma_h
+
+# Grid search
+for (i in 1:length(lambdas)) {
+  lambda_i <- lambdas[i]
+  
+  ## 1. Fit model
+  fit <- optim(par=gamma_start, fn=pnll, gr=gpnll,
+               lambda=lambda_i, x=x, y=y, s=s,
+               method="BFGS") #, hessian=TRUE
+  
+  gamma_h <- fit$par
+  beta_h <- exp(gamma_h)
+  mu_h <- as.vector(x %*% beta_h) # fitted expected deaths mu_h (μ̂_i)
+  
+  ## 2. Calculate EDF
+  W <- diag(y/(mu_h^2))
+  
+  # H_0 = X^T W X + 0*S = X^T W X
+  XWX <- t(x) %*% W %*% x
+  
+  # H_lambda = X^T W X + lambda S
+  H_lambda <- XWX + lambda_i*s
+  
+  # (H_lambda)^(-1) %*% H_0
+  H_inv_H0 <- solve(H_lambda, XWX)
+  
+  # trace(A) = sum(diag(A))
+  EDF[i] <- sum(diag(H_inv_H0))
+  
+  ## 3. Calculate l(beta_h)
+  # P = lambda * beta_h^T S * beta_h / 2
+  P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2
+  # ll = -nll = -pnll + P
+  ll <- -fit$value + P
+  
+  ## 4. BIC = -2l(beta_h) + log(n)*EDF
+  BIC[i] <- -2*ll + log(n)*EDF[i]
+}
+
+## 5. Find optimal λ
+i_opt <- which.min(BIC)      # index where BIC is minimum
+lambda_opt <- lambdas[i_opt] # optimal lambda!
+lsp_opt <- lsp[i_opt]        # optimal log(lambda)
+EDF_opt <- EDF[i_opt]        # EDF at minimum BIC
+BIC_min <- BIC[i_opt]        # minimum BIC
+
+# Visualise the results
+plot(lsp, BIC, type="l", 
+     xlab=expression(log(lambda)), ylab="BIC", 
+     main="BIC Optimization Results (Grid Search)")
+points(lsp_opt, BIC_min, col="red", pch=19)
+
+# Print the results
+cat("--- Optimal Lambda Selection ---\n")
+cat("Optimal log(lambda):", lsp_opt, "\n")
+cat("Optimal lambda:", lambda_opt, "\n")
+cat("Minimum BIC:", BIC_min, "\n")
+cat("EDF at minimum BIC:", EDF_opt)
+
+# Fit model with optimal lambda
+fit_opt <- optim(par=gamma_start, fn=pnll, gr=gpnll,
+                 lambda=lambda_opt, x=x, y=y, s=s,
+                 method="BFGS") #, hessian=TRUE
+# Use optim function with BFGS method to optimise
+gamma_h_opt <- fit_opt$par       # Get the fitted optimal parameters gamma_h
+beta_h_opt <- exp(gamma_h_opt)   # Calculate the fitted B-spline coefficients beta_h
+mu_h_opt <- x %*% beta_h_opt     # Calculate the fitted expected deaths mu_h
+f_h_opt <- x_tilde %*% beta_h_opt # Calculate the fitted new infection curve f_h
+
+# Plot with optimal parameters
+# Plot actual deaths data (gray dots)
+plot(data$julian, y, type="p", pch=19, col="darkgray", cex=.8,
+     xlab="Day", ylab="Deaths/Infection", 
+     xlim=c(t1,tn), ylim=range(c(f_h_opt, data$deaths)))
+# Plot fitted deaths data (black line)
+lines(data$julian, mu_h_opt, col="black", lwd=1.5)
+# Plot fitted infection data (blue line)
+lines(t_coverage, f_h_opt, type="l", col="blue", lwd=1.5)
+# Plot legend
+legend("topright", 
+       legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
        col=c("darkgray", "black", "blue"), 
-       pch=c(19, NA, NA), lty=c(NA, 1, 1), cex=0.8)
+       pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
 
 
-#Question4
-
+# Question 5
