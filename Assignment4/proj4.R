@@ -65,7 +65,8 @@ matrixes <- function(data, k=80){
 }
 
 # extract x_tilde, x, and s 
-m <- matrixes(data)
+k <- 80
+m <- matrixes(data, k=k)
 x_tilde <- m$X_tilde
 x <- m$X
 s <- m$S
@@ -94,7 +95,6 @@ gpnll <- function(gamma,x,y,s,lambda){
 }
 
 #check 
-k <- 80
 fd <- gamma0 <- rep(log(1e-3),k) # set gamma0 for testing
 lambda0 <- 5e-5 # set test lambda value.
 pnll0 <- pnll(gamma0, lambda0, x=x, y=y, s=s) # pnll at gamma0 and lambda0
