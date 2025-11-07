@@ -341,10 +341,9 @@ lines(t_coverage, f_h_opt,
 legend("topright", 
        legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections",
                   "Infections (95% CI))"),
-       col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
-       pch = c(19, NA, NA, NA), # Point for data
-       lty = c(NA, 1, 1, NA), # Lines for fits
+       col = c("darkgray", "black", "blue"),
+       pch = c(19, NA, NA, NA), 
        lwd = c(NA, 2, 2, NA),
-       fill = c(NA, NA, NA, rgb(0.2, 0.2, 1, 0.2)), # Fill for CI box
-       border = NA, # No border on legend boxes
-       cex = 0.8) # Slightly smaller text
+       fill = c(NA, NA, NA), 
+       border = NA, 
+       cex = 0.8) 
