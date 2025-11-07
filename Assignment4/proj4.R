@@ -126,9 +126,15 @@ tn <- data$julian[n]
 t_coverage <- t1:tn
 
 # Plot actual deaths data (gray dots)
-plot(data$julian, y, type="p", pch=19, col="darkgray", cex=.8,
-     xlab="Day", ylab="Deaths/Infection", 
-     xlim=c(t1,tn), ylim=range(c(f_h, data$deaths)))
+plot(data$julian, y, 
+     type="p", 
+     pch=19, 
+     col="darkgray", 
+     cex=.8,
+     xlab="Day", 
+     ylab="Deaths/Infection", 
+     xlim=c(t1,tn), 
+     ylim=range(c(f_h, data$deaths)))
 # Plot fitted deaths data (black line)
 lines(data$julian, mu_h, col="black", lwd=1.5)
 # Plot fitted infection data (blue line)
@@ -200,7 +206,8 @@ BIC_min <- BIC[i_opt]        # minimum BIC
 
 # Visualise the results
 plot(lsp, BIC, type="l", 
-     xlab=expression(log(lambda)), ylab="BIC", 
+     xlab=expression(log(lambda)), 
+     ylab="BIC", 
      main="BIC Optimization Results (Grid Search)")
 points(lsp_opt, BIC_min, col="red", pch=19)
 
@@ -223,13 +230,24 @@ f_h_opt <- x_tilde %*% beta_h_opt # Calculate the fitted new infection curve f_h
 
 # Plot with optimal parameters
 # Plot actual deaths data (gray dots)
-plot(data$julian, y, type="p", pch=19, col="darkgray", cex=.8,
-     xlab="Day", ylab="Deaths/Infection", 
-     xlim=c(t1,tn), ylim=range(c(f_h_opt, data$deaths)))
+plot(data$julian, y, 
+     type="p", 
+     pch=19, 
+     col="darkgray", 
+     cex=.8,
+     xlab="Day", 
+     ylab="Deaths/Infection", 
+     xlim=c(t1,tn), 
+     ylim=range(c(f_h_opt, data$deaths)))
 # Plot fitted deaths data (black line)
-lines(data$julian, mu_h_opt, col="black", lwd=1.5)
+lines(data$julian, mu_h_opt, 
+      col="black", 
+      lwd=1.5)
 # Plot fitted infection data (blue line)
-lines(t_coverage, f_h_opt, type="l", col="blue", lwd=1.5)
+lines(t_coverage, f_h_opt, 
+      type="l", 
+      col="blue", 
+      lwd=1.5)
 # Plot legend
 legend("topright", 
        legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
@@ -316,11 +334,11 @@ polygon(c(t_coverage, rev(t_coverage)),
 
 lines(data$julian, mu_h_opt, 
       col = "black", 
-      lwd = 2)
+      lwd = 1.5)
 
 lines(t_coverage, f_h_opt, 
       col = "blue", 
-      lwd = 2)
+      lwd = 1.5)
 
 legend("topright", 
        legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections", "95% CI (Infections)"),
