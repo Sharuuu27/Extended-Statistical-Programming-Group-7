@@ -306,7 +306,8 @@ fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025)
 fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
 # upper confidence bound for infection in each day
 
-ylim_max <- max(c(y, fitted_upper), na.rm = TRUE)
+ylim_max <- max(c(y, fitted_upper), na.rm = TRUE) 
+# ensure the canvas is big enough to fit the entire plot
 
 plot(data$julian, y, 
      type = "p", 
@@ -324,18 +325,22 @@ polygon(c(t_coverage, rev(t_coverage)),
         c(fitted_upper, rev(fitted_lower )),
         col = rgb(0.2, 0.2, 1, 0.2), # Semi-transparent blue
         border = NA)
+# outlines the confidence band width along the t-coverage
 
 
 lines(data$julian, mu_h_opt, 
       col = "black", 
       lwd = 1.5)
+# Plot fitted deaths data (black line)
 
 lines(t_coverage, f_h_opt, 
       col = "blue", 
       lwd = 1.5)
+# Plot fitted infection data (blue line)
 
 legend("topright", 
-       legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections", "95% CI (Infections)"),
+       legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections",
+                  "Infections (95% CI))"),
        col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
        pch = c(19, NA, NA, NA), # Point for data
        lty = c(NA, 1, 1, NA), # Lines for fits
