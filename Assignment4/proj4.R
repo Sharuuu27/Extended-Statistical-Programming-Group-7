@@ -267,49 +267,44 @@ pnll_weight <- function(gamma, x, y, s, lambda, w) {
 
 gpnll_weight <- function(gamma, x, y, s, lambda, w) {
   # Define the gradient of weighted pnll
-  beta <- exp(gamma) # beta = exp(gamma)
-  mu <- as.vector(x %*% beta) # mu = X %*% beta
-  z <- y/mu - 1 # z = y/mu - 1 (unchanged)
-  
-  # The ONLY change is here: we multiply 'z' (which comes from the
-  # derivative of ll_i) by its corresponding weight 'w[i]'.
-  dll <- as.vector(t(x) %*% (w * z)) * beta # d(sum w_i*l_i)/d(gamma)
-  dp <- lambda * beta * as.vector(s %*% beta) # d(p)/d(gamma) (unchanged)
-  
-  -dll + dp # return total gradient
+  beta <- exp(gamma) 
+  mu <- as.vector(x %*% beta)
+  z <- y/mu - 1 
+  dll <- as.vector(t(x) %*% (w * z)) * beta #(z is multiplied with weights)
+  dp <- lambda * beta * as.vector(s %*% beta) 
+  -dll + dp # return total weighted gradient
 }
 
-n_bootstrap <- 200
+n_bootstrap <- 200 # to generate 200 bootstrap replicates
 
-fhat_bootstrap <- matrix(0, nrow = nrow(x_tilde), ncol = n_bootstrap)
+fhat_bootstrap <- matrix(0, nrow = nrow(x_tilde), ncol = n_bootstrap) 
+# creating matrix for the bootstrap
 
 for (i in 1:n_bootstrap) {
-  # Generate bootstrap weights for this replicate
-  # 'wb' will have values 0, 1, 2, ...
-  wb <- tabulate(sample(n, replace=TRUE), n)
+  # Generate bootstrap weights for replicate = i
+   wb <- tabulate(sample(n, replace=TRUE), n)
   
   # Fit the model using the weighted functions
-  fit_b_hat <- optim(par=gamma_h_opt,  # Start from the optimal params for speed
-                 fn=pnll_weight,        # Use the NEW weighted pnll
-                 gr=gpnll_weight,       # Use the NEW weighted gradient
-                 lambda=lambda_opt,# Use the fixed optimal lambda from Q4
-                 x=x, y=y, s=s, w=wb, # Pass all arguments, including weights 'wb'
+  fit_b_hat <- optim(par=gamma_h_opt,  # Start from the optimal params
+                 fn=pnll_weight,       # NEW weighted pnll
+                 gr=gpnll_weight,      # NEW weighted gradient
+                 lambda=lambda_opt,    # fixed optimal lambda from Q4
+                 x=x, y=y, s=s, w=wb,
                  method="BFGS")
   
-  # Get the parameters from this bootstrap fit
-  gamma_b <- fit_b_hat$par
+  gamma_b <- fit_b_hat$par # parameters from this bootstrap fit
   beta_b <- exp(gamma_b)
   
-  # Calculate the fitted infection curve (f_h) for this replicate
-  f_hat_b <- x_tilde %*% beta_b
+  f_hat_b <- x_tilde %*% beta_b # fitted infection curve for this replicate
   
-  # Store the resulting infection curve in the i-th column of our matrix
-  fhat_bootstrap[, i] <- f_hat_b
+  fhat_bootstrap[, i] <- f_hat_b # store the result of infection curve
 }
 
 # Question 6
-fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025)
+fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025) 
+# lower confidence bound for infection in each day
 fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
+# upper confidence bound for infection in each day
 
 ylim_max <- max(c(y, fitted_upper), na.rm = TRUE)
 
