@@ -257,17 +257,16 @@ legend("topright",
 
 # Question 5
 pnll_weight <- function(gamma, x, y, s, lambda, w) {
-  beta <- exp(gamma) # beta = exp(gamma), ensuring positive f
-  mu <- x %*% beta   # mu = X %*% beta
-  ll <- y*log(mu) - mu - lgamma(y+1) # log-likelihood for each point i
-  p <- lambda*(t(beta) %*% s %*% beta)/2 # penalty (unchanged)
-  
-  # The ONLY change is here: we multiply the log-likelihood
-  # of each data point by its bootstrap weight 'w'.
+  # define the penalised negative log likelihood (pnll) function with weights
+  beta <- exp(gamma) # ensuring f(t) is positive
+  mu <- x %*% beta   
+  ll <- y*log(mu) - mu - lgamma(y+1) 
+  p <- lambda*(t(beta) %*% s %*% beta)/2 # penalty 
   -sum(w * ll) + p # return weighted pnll
 }
 
 gpnll_weight <- function(gamma, x, y, s, lambda, w) {
+  # Define the gradient of weighted pnll
   beta <- exp(gamma) # beta = exp(gamma)
   mu <- as.vector(x %*% beta) # mu = X %*% beta
   z <- y/mu - 1 # z = y/mu - 1 (unchanged)
