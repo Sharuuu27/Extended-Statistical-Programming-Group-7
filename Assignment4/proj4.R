@@ -238,3 +238,96 @@ legend("topright",
 
 
 # Question 5
+pnll_weight <- function(gamma, x, y, s, lambda, w) {
+  beta <- exp(gamma) # beta = exp(gamma), ensuring positive f
+  mu <- x %*% beta   # mu = X %*% beta
+  ll <- y*log(mu) - mu - lgamma(y+1) # log-likelihood for each point i
+  p <- lambda*(t(beta) %*% s %*% beta)/2 # penalty (unchanged)
+  
+  # The ONLY change is here: we multiply the log-likelihood
+  # of each data point by its bootstrap weight 'w'.
+  -sum(w * ll) + p # return weighted pnll
+}
+
+gpnll_weight <- function(gamma, x, y, s, lambda, w) {
+  beta <- exp(gamma) # beta = exp(gamma)
+  mu <- as.vector(x %*% beta) # mu = X %*% beta
+  z <- y/mu - 1 # z = y/mu - 1 (unchanged)
+  
+  # The ONLY change is here: we multiply 'z' (which comes from the
+  # derivative of ll_i) by its corresponding weight 'w[i]'.
+  dll <- as.vector(t(x) %*% (w * z)) * beta # d(sum w_i*l_i)/d(gamma)
+  dp <- lambda * beta * as.vector(s %*% beta) # d(p)/d(gamma) (unchanged)
+  
+  -dll + dp # return total gradient
+}
+
+n_bootstrap <- 200
+
+fhat_bootstrap <- matrix(0, nrow = nrow(x_tilde), ncol = n_bootstrap)
+
+for (i in 1:n_bootstrap) {
+  # Generate bootstrap weights for this replicate
+  # 'wb' will have values 0, 1, 2, ...
+  wb <- tabulate(sample(n, replace=TRUE), n)
+  
+  # Fit the model using the weighted functions
+  fit_b_hat <- optim(par=gamma_h_opt,  # Start from the optimal params for speed
+                 fn=pnll_weight,        # Use the NEW weighted pnll
+                 gr=gpnll_weight,       # Use the NEW weighted gradient
+                 lambda=lambda_opt,# Use the fixed optimal lambda from Q4
+                 x=x, y=y, s=s, w=wb, # Pass all arguments, including weights 'wb'
+                 method="BFGS")
+  
+  # Get the parameters from this bootstrap fit
+  gamma_b <- fit_b_hat$par
+  beta_b <- exp(gamma_b)
+  
+  # Calculate the fitted infection curve (f_h) for this replicate
+  f_hat_b <- x_tilde %*% beta_b
+  
+  # Store the resulting infection curve in the i-th column of our matrix
+  fhat_bootstrap[, i] <- f_hat_b
+}
+
+# Question 6
+fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025)
+fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
+
+ylim_max <- max(c(y, fitted_upper), na.rm = TRUE)
+
+plot(data$julian, y, 
+     type = "p", 
+     pch = 19, 
+     col = "darkgray", 
+     cex = 0.8,
+     xlab = "Day", 
+     ylab = "Deaths / Infections",
+     main = "Fitted COVID-19 Deaths and Infections with 95% CI",
+     xlim = c(t1, tn), 
+     ylim = c(0, ylim_max))
+
+
+polygon(c(t_coverage, rev(t_coverage)), 
+        c(fitted_upper, rev(fitted_lower )),
+        col = rgb(0.2, 0.2, 1, 0.2), # Semi-transparent blue
+        border = NA)
+
+
+lines(data$julian, mu_h_opt, 
+      col = "black", 
+      lwd = 2)
+
+lines(t_coverage, f_h_opt, 
+      col = "blue", 
+      lwd = 2)
+
+legend("topright", 
+       legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections", "95% CI (Infections)"),
+       col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
+       pch = c(19, NA, NA, NA), # Point for data
+       lty = c(NA, 1, 1, NA), # Lines for fits
+       lwd = c(NA, 2, 2, NA),
+       fill = c(NA, NA, NA, rgb(0.2, 0.2, 1, 0.2)), # Fill for CI box
+       border = NA, # No border on legend boxes
+       cex = 0.8) # Slightly smaller text
