@@ -285,10 +285,10 @@ for (i in 1:n_bootstrap) {
    wb <- tabulate(sample(n, replace=TRUE), n)
   
   # Fit the model using the weighted functions
-  fit_b_hat <- optim(par=gamma_h_opt,  # Start from the optimal params
-                 fn=pnll_weight,       # NEW weighted pnll
-                 gr=gpnll_weight,      # NEW weighted gradient
-                 lambda=lambda_opt,    # fixed optimal lambda from Q4
+  fit_b_hat <- optim(par=gamma_h_opt,  # Optimal parameter
+                 fn=pnll_weight,       # New weighted pnll
+                 gr=gpnll_weight,      # New weighted gradient
+                 lambda=lambda_opt,    # Fixed optimal lambda from Q4
                  x=x, y=y, s=s, w=wb,
                  method="BFGS")
   
@@ -303,6 +303,7 @@ for (i in 1:n_bootstrap) {
 # Question 6
 fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025) 
 # lower confidence bound for infection in each day
+
 fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
 # upper confidence bound for infection in each day
 
@@ -323,7 +324,7 @@ plot(data$julian, y,
 
 polygon(c(t_coverage, rev(t_coverage)), 
         c(fitted_upper, rev(fitted_lower )),
-        col = rgb(0.2, 0.2, 1, 0.2), # Semi-transparent blue
+        col = rgb(0.2, 0.2, 1, 0.2),
         border = NA)
 # outlines the confidence band width along the t-coverage
 
