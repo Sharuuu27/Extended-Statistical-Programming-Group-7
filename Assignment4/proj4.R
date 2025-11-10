@@ -29,7 +29,7 @@ data$date <- as.Date(data$date, format="%d/%m/%y")
 
 
 ## Evaluate X_tilde, X and S
-66matrixes <- function(data, k=80){
+matrixes <- function(data, k=80){
 # define a function to compute X_tilde, X and S 
   n <- nrow(data) # number of observation days, n
   t1 <- data$julian[1] - 30  # earliest infection day, setting as t1-30
