@@ -52,10 +52,10 @@ matrixes <- function(data, k=80){
   sdur <- 0.469 # standard deviation parameter for the log-normal distribution
   pd <- dlnorm(d, edur, sdur) # probability density
   pd <- pd / sum(pd) # normalize probabilities pd
-  for (i in 1:n) {
+  for (i in 1:n) { #loop over each observation days
     j_max <- min(29+i, 80) 
     # determine the maximum interval j_max for the convolution limit.
-    for (j in 1:j_max) {
+    for (j in 1:j_max) { # loop over all possible interval j
       y <- 30+i-j 
       x[i,] <- x[i,] + x_tilde[y,]*pd[j]
       # X_{i,k}=\sum_{j=1}^{min(29+i,80)}\tilde{X}_{(30+i-j),k}\times \pi_{j}
@@ -95,8 +95,8 @@ gpnll <- function(gamma,x,y,s,lambda){
 }
 
 #check 
-fd <- gamma0 <- rep(log(1e-3),k) # set gamma0 for testing
-lambda0 <- 5e-5 # set test lambda value.
+fd <- gamma0 <- rep(log(10),k) # set gamma0 for testing
+lambda0 <- 0.1 # set test lambda value.
 pnll0 <- pnll(gamma0, lambda0, x=x, y=y, s=s) # pnll at gamma0 and lambda0
 eps <- 1e-7 # finite difference interval 
 for (i in seq_along(gamma0)) { # loop over gamma0
@@ -106,7 +106,7 @@ for (i in seq_along(gamma0)) { # loop over gamma0
   fd[i] <- (pnll1 - pnll0) / eps   # approximate -dl/dgamma[i]      
 }
 head(fd);head(gpnll(gamma0, lambda0, x=x, y=y, s=s)) 
-# the result indicating that gpnll is coded correctly
+# the result indicated that gpnll is coded correctly
 
 
 ## Question3
@@ -144,7 +144,6 @@ legend("topright",
        legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
        col=c("darkgray", "black", "blue"),
        pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
-
 
 ## Question4
 
@@ -190,6 +189,7 @@ for (i in 1:length(lambdas)) {
   ## 3. Calculate l(beta_h)
   # P = lambda * beta_h^T S * beta_h / 2
   P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2
+
   # ll = -nll = -pnll + P
   ll <- -fit$value + P
   
