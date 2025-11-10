@@ -43,7 +43,7 @@ matrixes <- function(data, k=80){
   x_tilde <- splineDesign(knots=knot, x=t_coverage, ord=4, outer.ok=TRUE)
   # design matrix, X_tilde, for the B-splines defined by knots at the values 
   # in the scope of infection days
-  s <- crossprod(diff(diag(k), diff=2)) 
+  s <- crossprod(diff(diag(k), diff=2))
   # smoothing penalty matrix S
   x <- matrix(0, nrow=n, ncol=k)
   # initialise the death model matrix X
@@ -105,7 +105,7 @@ for (i in seq_along(gamma0)) { # loop over gamma0
   pnll1 <- pnll(gamma1, lambda0, x=x, y=y, s=s) # compute resulting pnll
   fd[i] <- (pnll1 - pnll0) / eps   # approximate -dl/dgamma[i]      
 }
-head(fd);head(gpnll(gamma0, lambda0, x=x, y=y, s=s)) 
+head(fd);head(gpnll(gamma0, lambda0, x=x, y=y, s=s))
 # the result indicated that gpnll is coded correctly
 
 
@@ -182,7 +182,7 @@ for (i in 1:length(lambdas)) {
   EDF[i] <- sum(diag(H_inv_H0)) # trace(A) = sum(diag(A))
   
   ## 3. Calculate l(beta_h)
-  P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2 
+  P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2
   # P = lambda * beta_h^T S * beta_h / 2
   
   ll <- -fit$value + P # ll = -nll = -pnll + P
@@ -253,25 +253,25 @@ legend("topright", # Plot legend
 pnll_weight <- function(gamma, x, y, s, lambda, w) {
   # define the penalised negative log likelihood (pnll) function with weights
   beta <- exp(gamma) # ensuring f(t) is positive
-  mu <- x %*% beta   
-  ll <- y*log(mu) - mu - lgamma(y+1) 
-  p <- lambda*(t(beta) %*% s %*% beta)/2 # penalty 
+  mu <- x %*% beta
+  ll <- y*log(mu) - mu - lgamma(y+1)
+  p <- lambda*(t(beta) %*% s %*% beta)/2 # penalty
   -sum(w * ll) + p # return weighted pnll
 }
 
 gpnll_weight <- function(gamma, x, y, s, lambda, w) {
   # Define the gradient of weighted pnll
-  beta <- exp(gamma) 
+  beta <- exp(gamma)
   mu <- as.vector(x %*% beta)
-  z <- y/mu - 1 
+  z <- y/mu - 1
   dll <- as.vector(t(x) %*% (w * z)) * beta #(z is multiplied with weights)
-  dp <- lambda * beta * as.vector(s %*% beta) 
+  dp <- lambda * beta * as.vector(s %*% beta)
   -dll + dp # return total weighted gradient
 }
 
 n_bootstrap <- 200 # to generate 200 bootstrap replicates
 
-fhat_bootstrap <- matrix(0, nrow = nrow(x_tilde), ncol = n_bootstrap) 
+fhat_bootstrap <- matrix(0, nrow = nrow(x_tilde), ncol = n_bootstrap)
 # creating matrix for the bootstrap
 
 for (i in 1:n_bootstrap) {
@@ -297,13 +297,13 @@ for (i in 1:n_bootstrap) {
 
 # Final results plot with confidence intervals
 
-fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025) 
+fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025)
 # lower confidence bound for infection in each day
 
 fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
 # upper confidence bound for infection in each day
 
-ylim_max <- max(c(y, fitted_upper), na.rm = TRUE) 
+ylim_max <- max(c(y, fitted_upper), na.rm = TRUE)
 # ensure the canvas is big enough to fit the entire plot
 
 plot(data$julian, y, 
