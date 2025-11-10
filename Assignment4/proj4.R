@@ -28,9 +28,8 @@ data <- read.table("engcov.txt", header=TRUE)
 data$date <- as.Date(data$date, format="%d/%m/%y")
 
 
-## Question1
-
-matrixes <- function(data, k=80){
+## Evaluate X_tilde, X and S
+66matrixes <- function(data, k=80){
 # define a function to compute X_tilde, X and S 
   n <- nrow(data) # number of observation days, n
   t1 <- data$julian[1] - 30  # earliest infection day, setting as t1-30
@@ -73,7 +72,7 @@ s <- m$S
 y <- data$deaths
 
 
-## Question2
+## Preparation for optim()
 
 pnll <- function(gamma,x,y,s,lambda){
 # define the penalised negative log likelihood (pnll) function
@@ -109,7 +108,7 @@ head(fd);head(gpnll(gamma0, lambda0, x=x, y=y, s=s))
 # the result indicated that gpnll is coded correctly
 
 
-## Question3
+## Plot the actual and fitted deaths and fitted daily infection curve
 fit <- optim(par=gamma0, fn=pnll, gr=gpnll,
              lambda=5e-5, x=x, y=y, s=s,
              method="BFGS") #, hessian=TRUE
@@ -145,23 +144,24 @@ legend("topright",
        col=c("darkgray", "black", "blue"),
        pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
 
-## Question4
+## Choosing an approriate lambda using BIC
 
-# Defining the grid
-lsp <- seq(-13, -7, length=50)
+
+lsp <- seq(-13, -7, length=50) # Defining the grid
 lambdas <- exp(lsp)
 #n <- nrow(data) # number of observation
 #k <- ncol(x) # number of parameters: 80
 
 BIC <- EDF <- rep(0, length(lsp))
 
-# Initial parameter（from Step 3）
-gamma_start <- gamma_h
 
-# Grid search
+gamma_start <- gamma_h # Initial parameter（from Step 3）
+
+
 for (i in 1:length(lambdas)) {
+  # Grid search
   lambda_i <- lambdas[i]
-  
+ 
   ## 1. Fit model
   fit <- optim(par=gamma_start, fn=pnll, gr=gpnll,
                lambda=lambda_i, x=x, y=y, s=s,
@@ -174,24 +174,25 @@ for (i in 1:length(lambdas)) {
   ## 2. Calculate EDF
   W <- diag(y/(mu_h^2))
   
-  # H_0 = X^T W X + 0*S = X^T W X
-  XWX <- t(x) %*% W %*% x
   
-  # H_lambda = X^T W X + lambda S
-  H_lambda <- XWX + lambda_i*s
+  XWX <- t(x) %*% W %*% x # H_0 = X^T W X + 0*S = X^T W X
   
-  # (H_lambda)^(-1) %*% H_0
-  H_inv_H0 <- solve(H_lambda, XWX)
   
-  # trace(A) = sum(diag(A))
-  EDF[i] <- sum(diag(H_inv_H0))
+  H_lambda <- XWX + lambda_i*s # H_lambda = X^T W X + lambda S
+  
+  
+  H_inv_H0 <- solve(H_lambda, XWX) # (H_lambda)^(-1) %*% H_0
+  
+  
+  EDF[i] <- sum(diag(H_inv_H0)) # trace(A) = sum(diag(A))
   
   ## 3. Calculate l(beta_h)
+ 
+  P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2 
   # P = lambda * beta_h^T S * beta_h / 2
-  P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2
 
-  # ll = -nll = -pnll + P
-  ll <- -fit$value + P
+  
+  ll <- -fit$value + P # ll = -nll = -pnll + P
   
   ## 4. BIC = -2l(beta_h) + log(n)*EDF
   BIC[i] <- -2*ll + log(n)*EDF[i]
@@ -204,8 +205,8 @@ lsp_opt <- lsp[i_opt]        # optimal log(lambda)
 EDF_opt <- EDF[i_opt]        # EDF at minimum BIC
 BIC_min <- BIC[i_opt]        # minimum BIC
 
-# Visualise the results
-plot(lsp, BIC, type="l", 
+
+plot(lsp, BIC, type="l",  # Visualise the results
      xlab=expression(log(lambda)), 
      ylab="BIC", 
      main="BIC Optimization Results (Grid Search)")
@@ -229,8 +230,8 @@ mu_h_opt <- x %*% beta_h_opt     # Calculate the fitted expected deaths mu_h
 f_h_opt <- x_tilde %*% beta_h_opt # Calculate the fitted new infection curve f_h
 
 # Plot with optimal parameters
-# Plot actual deaths data (gray dots)
-plot(data$julian, y, 
+
+plot(data$julian, y, # Plot actual deaths data (gray dots)
      type="p", 
      pch=19, 
      col="darkgray", 
@@ -239,17 +240,17 @@ plot(data$julian, y,
      ylab="Deaths/Infection", 
      xlim=c(t1,tn), 
      ylim=range(c(f_h_opt, data$deaths)))
-# Plot fitted deaths data (black line)
-lines(data$julian, mu_h_opt, 
+
+lines(data$julian, mu_h_opt,  # Plot fitted deaths data (black line)
       col="black", 
       lwd=1.5)
-# Plot fitted infection data (blue line)
-lines(t_coverage, f_h_opt, 
+
+lines(t_coverage, f_h_opt, # Plot fitted infection data (blue line)
       type="l", 
       col="blue", 
       lwd=1.5)
-# Plot legend
-legend("topright", 
+
+legend("topright", # Plot legend
        legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
        col=c("darkgray", "black", "blue"), 
        pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
@@ -323,23 +324,24 @@ plot(data$julian, y,
 
 
 polygon(c(t_coverage, rev(t_coverage)), 
+        # outlines the confidence band width along the t-coverage
         c(fitted_upper, rev(fitted_lower )),
         col = rgb(0.2, 0.2, 1, 0.2),
         border = NA)
-# outlines the confidence band width along the t-coverage
 
 
-lines(data$julian, mu_h_opt, 
+
+lines(data$julian, mu_h_opt, # Plot fitted deaths data (black line)
       col = "black", 
       lwd = 1.5)
-# Plot fitted deaths data (black line)
 
-lines(t_coverage, f_h_opt, 
+
+lines(t_coverage, f_h_opt, # Plot fitted infection data (blue line)
       col = "blue", 
       lwd = 1.5)
-# Plot fitted infection data (blue line)
 
-legend("topright", 
+
+legend("topright", # plot legend
        legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections",
                   "Infections (95% CI))"),
        col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
