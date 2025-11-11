@@ -60,10 +60,10 @@ matrixes <- function(data, k=80){
   pd <- dlnorm(d, edur, sdur) # probability density
   pd <- pd / sum(pd) # normalize probabilities pd
   for (i in 1:n) { #loop over each observation days
-    j_max <- min(29+i, 80) 
+    j_max <- min(29+i, 80)
     # determine the maximum interval j_max for the convolution limit.
     for (j in 1:j_max) { # loop over all possible interval j
-      y <- 30+i-j 
+      y <- 30+i-j
       x[i,] <- x[i,] + x_tilde[y,]*pd[j]
       # X_{i,k}=\sum_{j=1}^{min(29+i,80)}\tilde{X}_{(30+i-j),k}\times \pi_{j}
     }
