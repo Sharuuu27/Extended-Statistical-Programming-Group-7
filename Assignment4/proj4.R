@@ -1,26 +1,33 @@
-# Team Members: 
+## Team Members: 
 # 1. Shivasharini Govindasamy (Sharuuu27) - S2766392
 # 2. Yu-Hsuan Hung (YuHsuan07) - S2793274
 # 3. Yasuhiro Hara (hiroh-git) - S2826059
 
-# Team Contributions:
+## Team Contributions:
 # Shivasharini -  
 # Yu-Hsuan -  
 # Yasuhiro- 
 
-# Github repo link:
-#
+## Github repo link:
+# 
 
 ## OVERVIEW: 
-
+# This code fits a smooth deconvolution model to COVID-19 death data.
+# It estimates the daily infection curve f(t) using penalized B-splines ($\beta=e^\gamma$).
+# Optimization minimizes the penalized negative log-likelihood using BFGS.
+# The optimal smoothing parameter $\lambda$ is chosen by minimizing the BIC criterion.
+# Uncertainty in f(t) is assessed via 200 nonparametric bootstrap replicates.
 
 ## CODE STRUCTURE:
-# 1. 
-# 2. 
-# 3. 
-# 4. 
-# 5. 
-# 6. 
+# 1. Data loading and initial evaluation of model matrices (X_tilde, X, S).
+# 2. Definition and testing of the penalized negative log likelihood (PNLL) and its gradient.
+# 3. Preliminary fit of the model using a starting value for $\lambda$ and visualization of results.
+# 4. Grid search optimization to find the optimal $\lambda$ minimizing the BIC criterion.
+# 5. Non-parametric bootstrapping using weighted likelihood functions to quantify uncertainty in f(t).
+# 6. Final plot showing actual deaths, fitted deaths, and fitted infections with 95% confidence intervals.
+
+
+## Load packages and data 
 
 library(splines)
 #setwd("file")
@@ -37,7 +44,7 @@ matrixes <- function(data, k=80){
   tn <- data$julian[n]       # latest infection day
   t_coverage <- t1:tn        # the scope of infection days
   # k-2 knots cover the scope of infection days
-  unit <- (tn-t1)/(k-2-1) 
+  unit <- (tn-t1)/(k-2-1)
   knot <- seq(t1-unit*3, tn+unit*3, length.out=(k+4))
   # adding 6 points beyond the original k+2 knots, ensuring a total of k+4 knots
   x_tilde <- splineDesign(knots=knot, x=t_coverage, ord=4, outer.ok=TRUE)
@@ -64,13 +71,13 @@ matrixes <- function(data, k=80){
   list(X_tilde=x_tilde, X=x, S=s) # return the three computed matrices
 }
 
-# extract x_tilde, x, and s 
 k <- 80
 m <- matrixes(data, k=k)
 x_tilde <- m$X_tilde
 x <- m$X
 s <- m$S
 y <- data$deaths
+# extract x_tilde, x, and s
 
 
 ## Preparation for optim()
@@ -105,8 +112,10 @@ for (i in seq_along(gamma0)) { # loop over gamma0
   pnll1 <- pnll(gamma1, lambda0, x=x, y=y, s=s) # compute resulting pnll
   fd[i] <- (pnll1 - pnll0) / eps   # approximate -dl/dgamma[i]      
 }
-head(fd);head(gpnll(gamma0, lambda0, x=x, y=y, s=s))
-# the result indicated that gpnll is coded correctly
+analytic_grad <- gpnll(gamma0,lambda0,x=x,y=y,s=s)
+max_abs_diff <- max(abs(analytic_grad - fd))
+cat("Max absolute difference between analytic and finite difference gradient:", max_abs_diff, "\n")
+# the result indicating that gpnll is coded correctly (∵Max Diff is sufficiently low)
 
 
 ## Plot the actual and fitted deaths and fitted daily infection curve
@@ -161,7 +170,7 @@ for (i in 1:length(lambdas)) {
   # Grid search
   lambda_i <- lambdas[i]
  
-  ## 1. Fit model
+  # i. Fit model
   fit <- optim(par=gamma_start, fn=pnll, gr=gpnll,
                lambda=lambda_i, x=x, y=y, s=s,
                method="BFGS") #, hessian=TRUE
@@ -170,7 +179,7 @@ for (i in 1:length(lambdas)) {
   beta_h <- exp(gamma_h)
   mu_h <- as.vector(x %*% beta_h) # fitted expected deaths mu_h (μ̂_i)
   
-  ## 2. Calculate EDF
+  # ii. Calculate EDF
   W <- diag(y/(mu_h^2))
   
   XWX <- t(x) %*% W %*% x # H_0 = X^T W X + 0*S = X^T W X
@@ -181,17 +190,17 @@ for (i in 1:length(lambdas)) {
   
   EDF[i] <- sum(diag(H_inv_H0)) # trace(A) = sum(diag(A))
   
-  ## 3. Calculate l(beta_h)
+  # iii. Calculate l(beta_h)
   P <- lambda_i*(t(beta_h) %*% s %*% beta_h)/2
   # P = lambda * beta_h^T S * beta_h / 2
   
   ll <- -fit$value + P # ll = -nll = -pnll + P
   
-  ## 4. BIC = -2l(beta_h) + log(n)*EDF
+  # iv. BIC = -2l(beta_h) + log(n)*EDF
   BIC[i] <- -2*ll + log(n)*EDF[i]
 }
 
-## 5. Find optimal λ
+# v. Find optimal λ
 i_opt <- which.min(BIC)      # index where BIC is minimum
 lambda_opt <- lambdas[i_opt] # optimal lambda!
 lsp_opt <- lsp[i_opt]        # optimal log(lambda)
@@ -248,7 +257,7 @@ legend("topright", # Plot legend
        pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
 
 
-# Non-parametric bootstrapping for uncertainty
+## Non-parametric bootstrapping for uncertainty
 
 pnll_weight <- function(gamma, x, y, s, lambda, w) {
   # define the penalised negative log likelihood (pnll) function with weights
@@ -295,7 +304,7 @@ for (i in 1:n_bootstrap) {
 }
 
 
-# Final results plot with confidence intervals
+## Final results plot with confidence limits
 
 fitted_lower <- apply(fhat_bootstrap, 1, quantile, probs = 0.025)
 # lower confidence bound for infection in each day
@@ -336,8 +345,8 @@ legend("topright", # plot legend
        legend = c("Actual Deaths", "Fitted Deaths", "Fitted Infections",
                   "Infections (95% CI))"),
        col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
-       pch = c(19, NA, NA, NA), 
+       pch = c(19, NA, NA, NA),
        lwd = c(NA, 2, 2, 6),
        fill = c(NA, NA, NA, NA), 
        border = NA, 
-       cex = 0.8) 
+       cex = 0.8)
