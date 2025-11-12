@@ -113,9 +113,27 @@ for (i in seq_along(gamma0)) { # loop over gamma0
   fd[i] <- (pnll1 - pnll0) / eps   # approximate -dl/dgamma[i]      
 }
 analytic_grad <- gpnll(gamma0,lambda0,x=x,y=y,s=s)
-max_abs_diff <- max(abs(analytic_grad - fd))
+max_abs_diff <- max(abs(analytic_grad - fd)) # Max absolute difference
 cat("Max absolute difference between analytic and finite difference gradient:", max_abs_diff, "\n")
-# the result indicating that gpnll is coded correctly (∵Max Diff is sufficiently low)
+
+squared_errors <- (analytic_grad - fd)^2
+rmse <- sqrt(mean(squared_errors))
+data_range <- max(fd) - min(fd)
+nrmse_range <- rmse / data_range             # Normalised RMSE with range
+cat("Normalised RMSE (Range):", nrmse_range, "\n")
+# the results indicating that gpnll is coded correctly
+# (∵Max Diff and  NRMSE are sufficiently low)
+
+plot(fd, analytic_grad, # visualise QQ plot
+     type = "n",
+     xlab="Finite difference",
+     ylab="Analytic gradient")
+abline(a=0, b=1, lty=2) # draw the 45 degree line
+points(fd, analytic_grad, # draw the data points on top of the line
+       pch = 19,
+       col = "darkgray",
+       cex = 0.8)
+# the result indicating that gpnll is coded correctly
 
 
 ## Plot the actual and fitted deaths and fitted daily infection curve
