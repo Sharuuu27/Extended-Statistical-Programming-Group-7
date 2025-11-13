@@ -4,9 +4,14 @@
 # 3. Yasuhiro Hara (hiroh-git) - S2826059
 
 ## Team Contributions:
-# Shivasharini -  
-# Yu-Hsuan -  
-# Yasuhiro- 
+# Yu-Hsuan - Created function to evaluate X_tilde, X, S(Q1)
+             # Created function to evaluate penalized negative log likelihood (Q2)
+             # Created plot for preliminary sanity check (Q3)
+# Yasuhiro - Carried out finite differencing (Q2)
+             # Carried out grid search to choose appropriate lambda by
+             # minimising BIC (Q4)
+# Shivasharini - Performed non-parametric bootstrapping (Q5)
+                 # Created plot for deaths, infections (including 95% CI) (Q6)
 
 ## Github repo link:
 # 
@@ -227,8 +232,8 @@ BIC_min <- BIC[i_opt]        # minimum BIC
 
 
 plot(lsp, BIC, type="l",  # Visualise the results
-     xlab=expression(log(lambda)), 
-     ylab="BIC", 
+     xlab=expression(log(lambda)),
+     ylab="BIC",
      main="BIC Optimization Results (Grid Search)")
 points(lsp_opt, BIC_min, col="red", pch=19)
 
@@ -251,27 +256,27 @@ f_h_opt <- x_tilde %*% beta_h_opt # Calculate the fitted new infection curve f_h
 
 # Plot with optimal parameters
 plot(data$julian, y, # Plot actual deaths data (gray dots)
-     type="p", 
-     pch=19, 
-     col="darkgray", 
+     type="p",
+     pch=19,
+     col="darkgray",
      cex=.8,
-     xlab="Day", 
-     ylab="Deaths/Infection", 
-     xlim=c(t1,tn), 
+     xlab="Day",
+     ylab="Deaths/Infection",
+     xlim=c(t1,tn),
      ylim=range(c(f_h_opt, data$deaths)))
 
 lines(data$julian, mu_h_opt,  # Plot fitted deaths data (black line)
-      col="black", 
+      col="black",
       lwd=1.5)
 
 lines(t_coverage, f_h_opt, # Plot fitted infection data (blue line)
-      type="l", 
-      col="blue", 
+      type="l",
+      col="blue",
       lwd=1.5)
 
 legend("topright", # Plot legend
-       legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"), 
-       col=c("darkgray", "black", "blue"), 
+       legend=c("Actual Deaths", "Fitted Deaths", "Fitted Infection"),
+       col=c("darkgray", "black", "blue"),
        pch=c(19, NA, NA), lty=c(NA, 1, 1), lwd=2, cex=.8)
 
 
@@ -333,30 +338,29 @@ fitted_upper <- apply(fhat_bootstrap, 1, quantile, probs = 0.975)
 ylim_max <- max(c(y, fitted_upper), na.rm = TRUE)
 # ensure the canvas is big enough to fit the entire plot
 
-plot(data$julian, y, 
-     type = "p", 
-     pch = 19, 
-     col = "darkgray", 
+plot(data$julian, y,
+     type = "p",
+     pch = 19,
+     col = "darkgray",
      cex = 0.8,
-     xlab = "Day", 
+     xlab = "Day",
      ylab = "Deaths / Infections",
      main = "Fitted COVID-19 Deaths and Infections with 95% CI",
      xlim = c(t1, tn), 
      ylim = c(0, ylim_max))
 
-
-polygon(c(t_coverage, rev(t_coverage)), 
+polygon(c(t_coverage, rev(t_coverage)),
         # outlines the confidence band width along the t-coverage
         c(fitted_upper, rev(fitted_lower)),
         col = rgb(0.2, 0.2, 1, 0.2),
         border = NA)
 
 lines(data$julian, mu_h_opt, # Plot fitted deaths data (black line)
-      col = "black", 
+      col = "black",
       lwd = 1.5)
 
 lines(t_coverage, f_h_opt, # Plot fitted infection data (blue line)
-      col = "blue", 
+      col = "blue",
       lwd = 1.5)
 
 legend("topright", # plot legend
@@ -365,6 +369,6 @@ legend("topright", # plot legend
        col = c("darkgray", "black", "blue", rgb(0.2, 0.2, 1, 0.2)),
        pch = c(19, NA, NA, NA),
        lwd = c(NA, 2, 2, 6),
-       fill = c(NA, NA, NA, NA), 
-       border = NA, 
+       fill = c(NA, NA, NA, NA),
+       border = NA,
        cex = 0.8)
