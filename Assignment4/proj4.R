@@ -14,7 +14,7 @@
                  # Created plot for deaths, infections (including 95% CI) (Q6)
 
 ## Github repo link:
-# 
+# https://github.com/Sharuuu27/Extended-Statistical-Programming-Group-7/tree/387b93f0fa6f7a121bf2bab51640593a444cd7f4/Assignment4
 
 ## OVERVIEW: 
 # This code fits a smooth deconvolution model to COVID-19 death data.
